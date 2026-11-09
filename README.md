@@ -19,6 +19,8 @@ Requires PHP 7.4 or newer with PDO MySQL and GD (both standard on Truehost).
 
 4. **Delete `install.php`** from the server when it finishes.
 
+If `config.php` is already present but the configured database has no admin account, the installer offers a one-time form to create the first admin without reinstalling the site. Once any admin exists, the installer blocks account creation; sign in at `/admin/` instead.
+
 5. **Log in** at `https://yourdomain.com/admin/` and fill in *Site Settings* (phone, email, address, WhatsApp, hero image, logo, map).
 
 6. **PHP version**: cPanel → *Select PHP Version* → choose 8.1 or 8.2 and make sure `pdo_mysql`, `gd`, `mbstring`, `fileinfo` are ticked.

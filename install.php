@@ -1,9 +1,25 @@
 <?php
 // One-time web installer. DELETE THIS FILE after installation.
 define('ROOT', __DIR__);
+$adminSetup = false;
+$alreadyInstalled = false;
+$setupError = '';
+$setupPdo = null;
+
 if (is_file(ROOT . '/config.php')) {
-    http_response_code(403);
-    exit('<!DOCTYPE html><meta charset="utf-8"><body style="font-family:sans-serif;max-width:560px;margin:60px auto"><h2>Already installed</h2><p>The site is already set up. For security, please delete <code>install.php</code> from your server.</p><p><a href="./">Go to website</a> &middot; <a href="admin/">Admin login</a></p></body>');
+    require ROOT . '/config.php';
+    try {
+        $setupPdo = new PDO(
+            'mysql:host=' . DB_HOST . ';dbname=' . DB_NAME . ';charset=utf8mb4',
+            DB_USER,
+            DB_PASS,
+            [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC]
+        );
+        $alreadyInstalled = (bool)$setupPdo->query('SELECT id FROM admins LIMIT 1')->fetch();
+        $adminSetup = !$alreadyInstalled;
+    } catch (Throwable $ex) {
+        $setupError = 'Could not check the existing database. Verify the database settings in config.php and confirm that database/schema.sql has been imported.';
+    }
 }
 session_start();
 if (empty($_SESSION['inst'])) {
@@ -24,18 +40,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!hash_equals($_SESSION['inst'], (string)($_POST['_t'] ?? ''))) {
         $errors[] = 'Session expired, please reload the page.';
     }
-    if (strlen($f['admin_user']) < 3) {
-        $errors[] = 'Admin username must be at least 3 characters.';
+    if (!preg_match('/^[A-Za-z0-9._-]{3,60}$/', $f['admin_user'])) {
+        $errors[] = 'Admin username must be 3–60 characters and use only letters, numbers, dots, underscores or hyphens.';
     }
-    if (strlen($adminPass) < 8) {
-        $errors[] = 'Admin password must be at least 8 characters.';
+    if (strlen($adminPass) < 8 || strlen($adminPass) > 4096) {
+        $errors[] = 'Admin password must be between 8 and 4096 characters.';
     }
-    if ($f['db_name'] === '' || $f['db_user'] === '') {
+    if (!$adminSetup && !$alreadyInstalled && $setupError === '' && ($f['db_name'] === '' || $f['db_user'] === '')) {
         $errors[] = 'Database name and user are required.';
     }
 
     if (!$errors) {
         try {
+            if ($adminSetup) {
+                $lockName = 'tripex_admin_' . substr(hash('sha256', DB_NAME), 0, 40);
+                $lock = $setupPdo->prepare('SELECT GET_LOCK(?, 10)');
+                $lock->execute([$lockName]);
+                if ((int)$lock->fetchColumn() !== 1) {
+                    throw new RuntimeException('Could not obtain the admin setup lock. Please try again.');
+                }
+
+                try {
+                    $setupPdo->beginTransaction();
+                    if ($setupPdo->query('SELECT id FROM admins LIMIT 1 FOR UPDATE')->fetch()) {
+                        throw new RuntimeException('An administrator account has already been created. Please sign in instead.');
+                    }
+                    $setupPdo->prepare('INSERT INTO admins (username, password_hash) VALUES (?, ?)')->execute([
+                        $f['admin_user'],
+                        password_hash($adminPass, PASSWORD_DEFAULT),
+                    ]);
+                    $setupPdo->commit();
+                    $done = true;
+                    $adminCreated = true;
+                } catch (Throwable $ex) {
+                    if ($setupPdo->inTransaction()) {
+                        $setupPdo->rollBack();
+                    }
+                    throw $ex;
+                } finally {
+                    $release = $setupPdo->prepare('SELECT RELEASE_LOCK(?)');
+                    $release->execute([$lockName]);
+                }
+            } elseif ($alreadyInstalled || $setupError !== '') {
+                throw new RuntimeException('Admin setup is unavailable. Reload the page and check the existing database configuration.');
+            } else {
             $pdo = new PDO('mysql:host=' . $f['db_host'] . ';dbname=' . $f['db_name'] . ';charset=utf8mb4', $f['db_user'], $_POST['db_pass'] ?? '', [
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
@@ -109,6 +157,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             @chmod(ROOT . '/config.php', 0640);
             @mkdir(ROOT . '/uploads', 0755, true);
             $done = true;
+            }
         } catch (Throwable $ex) {
             $errors[] = 'Installation failed: ' . $ex->getMessage();
         }
@@ -128,28 +177,46 @@ button{background:#f59e0b;border:0;padding:12px 22px;border-radius:8px;font-weig
 .ok{background:#dcfce7;color:#166534;padding:14px;border-radius:8px}
 small{font-weight:400;color:#6b7280}
 </style></head><body><div class="box">
-<?php if (!empty($done)): ?>
+<?php if ($alreadyInstalled): ?>
+  <h1>Already installed</h1>
+  <p>The database already has an administrator account. For security, sign in at the admin panel and delete <code>install.php</code> from your server.</p>
+  <p><a href="./">Go to website</a> &middot; <a href="admin/">Admin login</a></p>
+<?php elseif ($setupError !== ''): ?>
+  <h1>Could not check setup status</h1>
+  <div class="err"><?= htmlspecialchars($setupError, ENT_QUOTES, 'UTF-8') ?></div>
+  <p>After confirming the database configuration and schema, reload this page.</p>
+<?php elseif (!empty($done)): ?>
   <h1>Installation complete</h1>
-  <div class="ok">The database is ready and your admin account has been created.</div>
+  <div class="ok"><?= !empty($adminCreated) ? 'Your admin account has been created.' : 'The database is ready and your admin account has been created.' ?></div>
   <p><strong>Important:</strong> delete <code>install.php</code> from your server now.</p>
   <p><a href="admin/login.php">Go to admin login &rarr;</a> &nbsp; <a href="./">View website</a></p>
 <?php else: ?>
   <h1>Website Installer</h1>
+  <?php if ($adminSetup): ?>
+    <p>The site configuration is present, but this database has no administrator yet. Create the first admin account below.</p>
+  <?php else: ?>
   <p>Enter the MySQL details you created in cPanel, and choose your admin login.</p>
+  <?php endif; ?>
   <?php foreach ($errors as $er): ?><div class="err"><?= htmlspecialchars($er) ?></div><?php endforeach; ?>
   <form method="post">
     <input type="hidden" name="_t" value="<?= htmlspecialchars($_SESSION['inst']) ?>">
+    <?php if (!$adminSetup): ?>
     <h3 style="border:0;padding:0;margin-top:14px">Database</h3>
     <label>Host <small>(usually localhost)</small><input type="text" name="db_host" value="<?= htmlspecialchars($f['db_host']) ?>"></label>
     <label>Database name<input type="text" name="db_name" value="<?= htmlspecialchars($f['db_name']) ?>"></label>
     <label>Database user<input type="text" name="db_user" value="<?= htmlspecialchars($f['db_user']) ?>"></label>
     <label>Database password<input type="password" name="db_pass"></label>
+    <?php endif; ?>
     <h3>Site &amp; admin</h3>
+    <?php if (!$adminSetup): ?>
     <label>Company name<input type="text" name="site_name" value="<?= htmlspecialchars($f['site_name']) ?>"></label>
+    <?php endif; ?>
     <label>Admin username<input type="text" name="admin_user" value="<?= htmlspecialchars($f['admin_user']) ?>"></label>
     <label>Admin password <small>(min. 8 characters)</small><input type="password" name="admin_pass"></label>
+    <?php if (!$adminSetup): ?>
     <label><input type="checkbox" name="sample" value="1" <?= $f['sample'] === '1' ? 'checked' : '' ?>> Add a few sample products</label>
-    <button type="submit">Install</button>
+    <?php endif; ?>
+    <button type="submit"><?= $adminSetup ? 'Create admin account' : 'Install' ?></button>
   </form>
 <?php endif; ?>
 </div></body></html>
