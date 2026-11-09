@@ -7,6 +7,7 @@ $stats = [
     'Active products' => (int)q('SELECT COUNT(*) FROM products WHERE is_active = 1')->fetchColumn(),
     'Categories'      => (int)q('SELECT COUNT(*) FROM categories')->fetchColumn(),
     'New enquiries'   => (int)q('SELECT COUNT(*) FROM enquiries WHERE is_read = 0')->fetchColumn(),
+    'Low-stock products' => (int)q('SELECT COUNT(*) FROM products WHERE stock_quantity IS NOT NULL AND low_stock_threshold > 0 AND stock_quantity <= low_stock_threshold')->fetchColumn(),
 ];
 $recent = q('SELECT e.*, p.name AS product FROM enquiries e LEFT JOIN products p ON p.id = e.product_id ORDER BY e.id DESC LIMIT 6')->fetchAll();
 $top = q('SELECT name, views FROM products ORDER BY views DESC LIMIT 5')->fetchAll();
@@ -16,6 +17,14 @@ include __DIR__ . '/_header.php';
   <?php foreach ($stats as $label => $n): ?><div class="stat"><strong><?= $n ?></strong><span><?= e($label) ?></span></div><?php endforeach; ?>
 </div>
 <div class="two">
+  <div class="panel">
+    <h2>Inventory attention</h2>
+    <?php $lowStock = q('SELECT id, name, stock_quantity, unit FROM products WHERE stock_quantity IS NOT NULL AND low_stock_threshold > 0 AND stock_quantity <= low_stock_threshold ORDER BY stock_quantity ASC, name LIMIT 5')->fetchAll(); ?>
+    <?php if ($lowStock): ?>
+      <table class="tbl"><?php foreach ($lowStock as $item): ?><tr><td><?= e($item['name']) ?></td><td class="r"><span class="stock-warning"><?= number_format((float)$item['stock_quantity'], 2) ?><?= $item['unit'] ? ' ' . e($item['unit']) : '' ?></span></td></tr><?php endforeach; ?></table>
+    <?php else: ?><p class="muted">No products are currently below their configured stock thresholds.</p><?php endif; ?>
+    <p><a class="btn btn-sm" href="stock.php">Manage inventory</a></p>
+  </div>
   <div class="panel">
     <h2>Latest enquiries</h2>
     <?php if ($recent): ?>

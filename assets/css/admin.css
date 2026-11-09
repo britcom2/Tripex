@@ -93,3 +93,22 @@ hr{border:0;border-top:1px solid var(--line);margin:18px 0}
   .content{margin-left:0;padding:16px}
   .two,.form-grid{grid-template-columns:1fr}.csv-import{display:block}.csv-actions{margin-top:16px}
 }
+
+/* Staff accounts and inventory */
+.user-create-form{display:grid;grid-template-columns:minmax(160px,1fr) minmax(180px,1fr) auto;gap:12px;align-items:end}
+.user-create-form label{margin:0}
+.user-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.user-inline-form{display:flex;align-items:center;gap:5px}
+.user-inline-form input{width:145px;margin:0;padding:6px 8px}
+.stock-intro{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.stock-intro h2{margin-bottom:5px}
+.stock-intro p{margin:0;max-width:720px}
+.stock-adjust-form{display:grid;grid-template-columns:125px minmax(135px,1fr) auto;gap:6px;align-items:center;min-width:370px}
+.stock-adjust-form input{margin:0;padding:6px 8px}
+.stock-warning{color:#b45309;font-size:.8rem;font-weight:700}
+.stock-positive{color:#15803d;font-weight:700}
+.stock-negative{color:#b91c1c;font-weight:700}
+.stock-history-scroll{overflow-x:auto}
+.stock-history .tbl{min-width:760px}
+@media(max-width:900px){.user-create-form{grid-template-columns:1fr 1fr}.user-create-form .btn{grid-column:1/-1;justify-self:start}}
+@media(max-width:560px){.user-create-form{grid-template-columns:1fr}.user-create-form .btn{grid-column:auto}.user-actions{align-items:flex-start;flex-direction:column}.stock-intro .btn{flex:1;text-align:center}}

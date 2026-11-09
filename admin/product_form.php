@@ -20,6 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $catId = (int)($_POST['category_id'] ?? 0) ?: null;
     $price = trim((string)($_POST['price'] ?? ''));
     $sale  = trim((string)($_POST['sale_price'] ?? ''));
+    $thresholdInput = trim((string)($_POST['low_stock_threshold'] ?? '0'));
     $data = [
         'name'              => $name,
         'category_id'       => $catId,
@@ -31,6 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'sale_price'        => $sale === '' ? null : max(0, (float)$sale),
         'unit'              => substr(trim((string)($_POST['unit'] ?? '')), 0, 30) ?: null,
         'stock_status'      => in_array($_POST['stock_status'] ?? '', ['in_stock', 'out_of_stock', 'made_to_order'], true) ? $_POST['stock_status'] : 'in_stock',
+        'low_stock_threshold' => is_numeric($thresholdInput) ? max(0, (float)$thresholdInput) : 0,
         'is_active'         => isset($_POST['is_active']) ? 1 : 0,
         'is_featured'       => isset($_POST['is_featured']) ? 1 : 0,
     ];
@@ -39,6 +41,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     if ($data['sale_price'] !== null && $data['price'] !== null && $data['sale_price'] >= $data['price']) {
         $errors[] = 'Offer price must be lower than the regular price (or leave it empty).';
+    }
+    if ($thresholdInput === '' || !is_numeric($thresholdInput) || !is_finite((float)$thresholdInput) || (float)$thresholdInput < 0 || (float)$thresholdInput > 10000000) {
+        $errors[] = 'Low-stock threshold must be a number from 0 to 10,000,000.';
     }
 
     if (!$errors) {
@@ -154,6 +159,7 @@ include __DIR__ . '/_header.php';
             <option value="<?= $k ?>" <?= ($p['stock_status'] ?? 'in_stock') === $k ? 'selected' : '' ?>><?= $l ?></option>
           <?php endforeach; ?>
         </select></label>
+      <label>Low-stock alert threshold<input type="number" step="0.01" min="0" max="10000000" name="low_stock_threshold" value="<?= $v('low_stock_threshold', '0') ?>"><small class="muted">Set 0 to disable alerts. Use the Stock control page to record quantities.</small></label>
     </div>
   </div>
 </form>

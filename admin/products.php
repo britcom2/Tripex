@@ -223,7 +223,7 @@ $rows = q(product_select() . " WHERE $w ORDER BY p.id DESC LIMIT $per OFFSET $of
 $cats = q('SELECT id, name FROM categories ORDER BY name')->fetchAll();
 
 $adminTitle = 'Products';
-$adminActions = '<a class="btn btn-primary" href="product_form.php">+ Add product</a>';
+$adminActions = '<a class="btn" href="stock.php">Stock control</a> <a class="btn btn-primary" href="product_form.php">+ Add product</a>';
 include __DIR__ . '/_header.php';
 ?>
 <section class="panel csv-import">
@@ -260,12 +260,18 @@ include __DIR__ . '/_header.php';
 </form>
 <div class="panel nopad">
 <table class="tbl wide">
-  <thead><tr><th></th><th>Product</th><th>Category</th><th>Price (<?= e(setting('currency', 'KES')) ?>)</th><th>Status</th><th class="r">Actions</th></tr></thead>
+  <thead><tr><th></th><th>Product</th><th>Category</th><th>On hand</th><th>Price (<?= e(setting('currency', 'KES')) ?>)</th><th>Status</th><th class="r">Actions</th></tr></thead>
   <?php foreach ($rows as $p): ?>
     <tr>
       <td class="thumb"><img src="<?= e(img_url($p['image'])) ?>" alt=""></td>
       <td><strong><?= e($p['name']) ?></strong><br><small class="muted"><?= e($p['sku'] ?: '—') ?> · <?= e(stock_label($p['stock_status'])) ?></small></td>
       <td><?= e($p['cat_name'] ?: '—') ?></td>
+      <td>
+        <?php if ($p['stock_quantity'] === null): ?><span class="muted">Not tracked</span>
+        <?php else: ?><?= number_format((float)$p['stock_quantity'], 2) ?><?= $p['unit'] ? ' ' . e($p['unit']) : '' ?>
+          <?php if ($p['stock_quantity'] !== null && (float)$p['low_stock_threshold'] > 0 && (float)$p['stock_quantity'] <= (float)$p['low_stock_threshold']): ?><br><span class="stock-warning">Low stock</span><?php endif; ?>
+        <?php endif; ?>
+      </td>
       <td>
         <form method="post" class="inline-edit">
           <?= csrf_field() ?><input type="hidden" name="action" value="quick_price"><input type="hidden" name="id" value="<?= (int)$p['id'] ?>">
@@ -288,7 +294,7 @@ include __DIR__ . '/_header.php';
       </td>
     </tr>
   <?php endforeach; ?>
-  <?php if (!$rows): ?><tr><td colspan="6" class="muted center">No products found.</td></tr><?php endif; ?>
+  <?php if (!$rows): ?><tr><td colspan="7" class="muted center">No products found.</td></tr><?php endif; ?>
 </table>
 </div>
 <?= pager($total, $per, $page) ?>

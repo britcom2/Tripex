@@ -47,7 +47,9 @@ The workflow deliberately does not upload `config.php`, `install.php`, or `uploa
 | Section | What you can do |
 |---|---|
 | Dashboard | Counts, latest enquiries, most viewed products |
-| Products | Add / edit / delete, multiple images (choose the main one), price, offer price, unit, stock status, specs, visible & featured toggles, **quick price edit in the list**, and CSV import |
+| Products | Add / edit / delete, multiple images (choose the main one), price, offer price, unit, stock status, low-stock threshold, specs, visible & featured toggles, **quick price edit in the list**, and CSV import |
+| Stock control | Record signed stock movements with a required reason, review the adjustment history, and filter products below their alert thresholds |
+| Staff accounts | Create admin accounts, reset passwords, disable/reactivate accounts, and delete disabled accounts. All staff accounts currently have full admin access. |
 | Categories | Add / edit / delete with image and display order |
 | Gallery | Upload project photos with captions |
 | Enquiries | Read, reply by email, delete (also emailed to the address in settings) |
@@ -59,6 +61,8 @@ Leave a product's price empty to show **"Request a quote"** instead of a price.
 To bulk add products, open **Admin → Products**, download the CSV template, fill it in and upload it. The importer accepts category names or slugs, leaves empty prices as quote-only, and skips invalid rows with line-by-line feedback. CSV files are limited to 5 MB. Products with a duplicate slug are skipped.
 
 Customers can add products from the catalogue to a quote list and submit a project request at `/quote`. The request captures optional quantities, site type and location, timeline, installation preference and project notes, and appears in **Admin → Enquiries**. The homepage features an automatically rotating, keyboard-accessible project slideshow. On mobile, a fixed bottom dock provides Home, Products, Projects, Call, WhatsApp and Quote shortcuts (contact shortcuts appear when configured).
+
+On existing installations, deploy the update and sign in to the admin panel; the site will direct an administrator to the one-time **Database upgrade** page. Run it before using staff accounts or stock control. Existing product stock counts remain untracked until you record opening quantities in **Admin → Stock control**. New installations include the updated schema automatically.
 
 ## Notes
 

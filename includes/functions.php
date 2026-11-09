@@ -111,10 +111,45 @@ function admin_logged_in(): bool
     return !empty($_SESSION['admin_id']);
 }
 
-function require_admin(): void
+function admin_inventory_schema_ready(): bool
+{
+    $requiredColumns = [
+        'admins' => ['is_active'],
+        'products' => ['stock_quantity', 'low_stock_threshold'],
+    ];
+    foreach ($requiredColumns as $table => $columns) {
+        foreach ($columns as $column) {
+            if (!(bool)q(
+                'SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?',
+                [$table, $column]
+            )->fetchColumn()) {
+                return false;
+            }
+        }
+    }
+    return (bool)q(
+        'SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?',
+        ['product_stock_adjustments']
+    )->fetchColumn();
+}
+
+function require_admin(bool $requireInventorySchema = true): void
 {
     if (!admin_logged_in()) {
         redirect('admin/login.php');
+    }
+    $schemaReady = admin_inventory_schema_ready();
+    if ($requireInventorySchema && !$schemaReady) {
+        redirect('admin/upgrade.php');
+    }
+    if ($schemaReady) {
+        $admin = q('SELECT is_active FROM admins WHERE id = ?', [(int)$_SESSION['admin_id']])->fetch();
+        if (!$admin || !(int)$admin['is_active']) {
+            unset($_SESSION['admin_id'], $_SESSION['admin_user']);
+            session_regenerate_id(true);
+            flash('error', 'This administrator account is inactive. Contact an active administrator.');
+            redirect('admin/login.php');
+        }
     }
 }
 

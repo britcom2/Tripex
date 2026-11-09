@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $u = trim((string)($_POST['username'] ?? ''));
         $p = (string)($_POST['password'] ?? '');
         $row = q('SELECT * FROM admins WHERE username = ? LIMIT 1', [$u])->fetch();
-        if ($row && password_verify($p, $row['password_hash'])) {
+        if ($row && (int)($row['is_active'] ?? 1) === 1 && password_verify($p, $row['password_hash'])) {
             session_regenerate_id(true);
             $_SESSION['admin_id'] = (int)$row['id'];
             $_SESSION['admin_user'] = $row['username'];
