@@ -1,5 +1,6 @@
 <?php
 require __DIR__ . '/includes/bootstrap.php';
+// this is a comment
 
 $pageTitle = 'About Us';
 $metaDesc = 'Learn about Tripex, our architectural flooring expertise, company journey, team and standards.';
