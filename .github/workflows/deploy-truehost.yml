@@ -1,0 +1,41 @@
+name: Deploy to Truehost development
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: truehost-development
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Deploy site over FTPS
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Deploy to Truehost
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.TRUEHOST_FTP_SERVER }}
+          username: ${{ secrets.TRUEHOST_FTP_USERNAME }}
+          password: ${{ secrets.TRUEHOST_FTP_PASSWORD }}
+          protocol: ftps
+          port: 21
+          local-dir: ./
+          server-dir: tripex.splentainsights.com/
+          dangerous-clean-slate: false
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/.github/**
+            **/config.php
+            **/install.php
+            **/uploads/**
