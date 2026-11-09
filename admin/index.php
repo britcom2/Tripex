@@ -11,20 +11,62 @@ $stats = [
 ];
 $recent = q('SELECT e.*, p.name AS product FROM enquiries e LEFT JOIN products p ON p.id = e.product_id ORDER BY e.id DESC LIMIT 6')->fetchAll();
 $top = q('SELECT name, views FROM products ORDER BY views DESC LIMIT 5')->fetchAll();
+$lowStock = q(
+    'SELECT id, name, stock_quantity, low_stock_threshold, unit
+     FROM products
+     WHERE stock_quantity IS NOT NULL AND low_stock_threshold > 0 AND stock_quantity <= low_stock_threshold
+     ORDER BY stock_quantity ASC, name
+     LIMIT 8'
+)->fetchAll();
+$outOfStockCount = (int)q(
+    'SELECT COUNT(*) FROM products
+     WHERE stock_quantity IS NOT NULL AND low_stock_threshold > 0 AND stock_quantity <= 0'
+)->fetchColumn();
 include __DIR__ . '/_header.php';
 ?>
 <div class="stats">
-  <?php foreach ($stats as $label => $n): ?><div class="stat"><strong><?= $n ?></strong><span><?= e($label) ?></span></div><?php endforeach; ?>
+  <?php foreach ($stats as $label => $n): ?>
+    <div class="stat <?= $label === 'Low-stock products' && $n > 0 ? 'stat-warning' : '' ?>">
+      <strong><?= $n ?></strong>
+      <span><?= e($label) ?></span>
+      <?php if ($label === 'Low-stock products' && $n > 0): ?><a href="stock.php?low=1">Review stock &rarr;</a><?php endif; ?>
+    </div>
+  <?php endforeach; ?>
 </div>
-<div class="two">
-  <div class="panel">
-    <h2>Inventory attention</h2>
-    <?php $lowStock = q('SELECT id, name, stock_quantity, unit FROM products WHERE stock_quantity IS NOT NULL AND low_stock_threshold > 0 AND stock_quantity <= low_stock_threshold ORDER BY stock_quantity ASC, name LIMIT 5')->fetchAll(); ?>
-    <?php if ($lowStock): ?>
-      <table class="tbl"><?php foreach ($lowStock as $item): ?><tr><td><?= e($item['name']) ?></td><td class="r"><span class="stock-warning"><?= number_format((float)$item['stock_quantity'], 2) ?><?= $item['unit'] ? ' ' . e($item['unit']) : '' ?></span></td></tr><?php endforeach; ?></table>
-    <?php else: ?><p class="muted">No products are currently below their configured stock thresholds.</p><?php endif; ?>
-    <p><a class="btn btn-sm" href="stock.php">Manage inventory</a></p>
+<section class="inventory-alert <?= $outOfStockCount > 0 ? 'inventory-alert-critical' : ($lowStock ? 'inventory-alert-warning' : 'inventory-alert-clear') ?>" <?= $lowStock ? 'role="alert"' : 'role="status"' ?>>
+  <div class="inventory-alert-heading">
+    <span class="inventory-alert-icon" aria-hidden="true"><?= $lowStock ? '!' : '&#10003;' ?></span>
+    <div>
+      <h2><?= $lowStock ? ($outOfStockCount > 0 ? 'Stock needs immediate attention' : 'Low-stock alert') : 'Inventory is healthy' ?></h2>
+      <p>
+        <?php if ($lowStock): ?>
+          <?= count($lowStock) === 8 && $stats['Low-stock products'] > 8 ? 'Showing 8 of ' . $stats['Low-stock products'] . ' ' : $stats['Low-stock products'] . ' ' ?>
+          product<?= $stats['Low-stock products'] === 1 ? ' is' : 's are' ?> at or below their alert threshold.
+          <?php if ($outOfStockCount > 0): ?><strong><?= $outOfStockCount ?> out of stock.</strong><?php endif; ?>
+        <?php else: ?>
+          No tracked products are currently at or below their configured alert thresholds.
+        <?php endif; ?>
+      </p>
+    </div>
+    <a class="btn <?= $lowStock ? 'btn-primary' : '' ?>" href="stock.php?low=1">Open stock control &rarr;</a>
   </div>
+  <?php if ($lowStock): ?>
+    <div class="inventory-alert-list">
+      <?php foreach ($lowStock as $item): ?>
+        <?php $isOut = (float)$item['stock_quantity'] <= 0; ?>
+        <div class="inventory-alert-item <?= $isOut ? 'inventory-alert-item-critical' : '' ?>">
+          <div>
+            <a href="product_form.php?id=<?= (int)$item['id'] ?>"><?= e($item['name']) ?></a>
+            <small><?= $isOut ? 'Out of stock' : 'Low stock' ?> · Threshold <?= number_format((float)$item['low_stock_threshold'], 2) ?><?= $item['unit'] ? ' ' . e($item['unit']) : '' ?></small>
+          </div>
+          <strong><?= number_format((float)$item['stock_quantity'], 2) ?><?= $item['unit'] ? ' ' . e($item['unit']) : '' ?></strong>
+          <a class="inventory-adjust-link" href="stock.php?low=1">Adjust stock</a>
+        </div>
+      <?php endforeach; ?>
+    </div>
+  <?php endif; ?>
+</section>
+<div class="two">
   <div class="panel">
     <h2>Latest enquiries</h2>
     <?php if ($recent): ?>
