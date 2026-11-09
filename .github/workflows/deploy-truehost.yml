@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   deploy:
-    name: Deploy site over FTPS
+    name: Deploy site to Truehost
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
@@ -27,10 +27,10 @@ jobs:
           server: ${{ secrets.TRUEHOST_FTP_SERVER }}
           username: ${{ secrets.TRUEHOST_FTP_USERNAME }}
           password: ${{ secrets.TRUEHOST_FTP_PASSWORD }}
-          protocol: ftps
-          port: 21
+          protocol: ${{ secrets.TRUEHOST_FTP_PROTOCOL }}
+          port: ${{ secrets.TRUEHOST_FTP_PORT }}
           local-dir: ./
-          server-dir: tripex.splentainsights.com/
+          server-dir: ${{ secrets.TRUEHOST_FTP_SERVER_DIR }}
           dangerous-clean-slate: false
           exclude: |
             **/.git*

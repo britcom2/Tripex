@@ -29,15 +29,16 @@ If the installer cannot write `config.php`, copy `config.sample.php` to `config.
 
 ## GitHub Actions deployment to Truehost
 
-The workflow at `.github/workflows/deploy-truehost.yml` deploys each push to `main` to `tripex.splentainsights.com/` over explicit FTPS (port 21). Confirm that this is the correct directory relative to the FTP account's home directory in cPanel before enabling deployment.
-
-In the GitHub repository, open **Settings → Secrets and variables → Actions** and add these repository secrets:
+The workflow at `.github/workflows/deploy-truehost.yml` deploys each push to `main` over FTPS. In the GitHub repository, open **Settings → Secrets and variables → Actions** and add these repository secrets:
 
 | Secret | Value |
 |---|---|
 | `TRUEHOST_FTP_SERVER` | FTP server hostname from Truehost/cPanel (not necessarily the website hostname) |
 | `TRUEHOST_FTP_USERNAME` | FTP account username |
 | `TRUEHOST_FTP_PASSWORD` | FTP account password |
+| `TRUEHOST_FTP_SERVER_DIR` | Destination directory relative to the FTP account home. The current expected value is `tripex.splentainsights.com/`; verify the correct path in cPanel and keep the trailing slash. |
+| `TRUEHOST_FTP_PORT` | FTPS port from Truehost. Common explicit FTPS port is `21`; confirm with the provider. |
+| `TRUEHOST_FTP_PROTOCOL` | `ftps` for explicit FTPS; use only the protocol confirmed by Truehost. |
 
 The workflow deliberately does not upload `config.php`, `install.php`, or `uploads/`, and does not clear the destination before deployment. Configure the development site's `config.php`, database, and writable uploads directory on the server separately. Remove any existing installer from the server after setup. Never add hosting credentials or `config.php` to Git.
 
