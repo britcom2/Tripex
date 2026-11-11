@@ -39,17 +39,7 @@ The `/admin/` area provides tools for managing the site:
 
 ## Main areas of the codebase
 
-<<<<<<< HEAD
-If the installer cannot write `config.php`, copy `config.sample.php` to `config.php`, fill it in, and import `database/schema.sql` through phpMyAdmin, then create your admin user via the installer or phpMyAdmin.
-
-## GitHub Actions deployment to Truehost
-
-The workflow at `.github/workflows/deploy-truehost.yml` validates PHP syntax and deploys each push to `main` over FTPS. It uploads a `deployment.json` release marker; check **Admin → System status → Deployed revision** to confirm which commit is live. If the marker does not change, confirm the commit was pushed to `main` and its GitHub Actions run completed successfully. In the GitHub repository, open **Settings → Secrets and variables → Actions** and add these repository secrets:
-
-| Secret | Value |
-=======
 | Path | Purpose |
->>>>>>> d7c35cdb2dd9b2fb5e675ed3d0337f6834121235
 |---|---|
 | `index.php`, `products.php`, `product.php` | Homepage and product catalogue |
 | `about.php`, `services.php`, `gallery.php`, `contact.php` | Company and contact pages |
@@ -59,6 +49,23 @@ The workflow at `.github/workflows/deploy-truehost.yml` validates PHP syntax and
 | `assets/` | Stylesheets and static assets |
 | `uploads/` | Images managed through the site |
 | `database/` | Database schema |
+
+If the installer cannot write `config.php`, copy `config.sample.php` to `config.php`, fill in the database details, and import `database/schema.sql` through your database management tool.
+
+## GitHub Actions production deployment to Truehost
+
+The workflow at `.github/workflows/deploy-truehost.yml` validates PHP syntax and deploys each push to `main` to the production site over FTPS. It preserves the live `config.php` and uploaded content. A `deployment.json` release marker records the deployed commit; check **Admin → System status → Deployed revision** to confirm which commit is live. If the marker does not change, confirm the GitHub Actions run completed successfully.
+
+Configure these repository secrets under **Settings → Secrets and variables → Actions**. Keep the `TRUEHOST_*` values pointed at the production site:
+
+| Secret | Purpose |
+|---|---|
+| `TRUEHOST_FTP_SERVER` | FTP server hostname |
+| `TRUEHOST_FTP_USERNAME` | FTP account username |
+| `TRUEHOST_FTP_PASSWORD` | FTP account password |
+| `TRUEHOST_FTP_PROTOCOL` | Provider-confirmed FTP protocol, such as `ftps` |
+| `TRUEHOST_FTP_PORT` | Provider-confirmed FTP port |
+| `TRUEHOST_FTP_SERVER_DIR` | Production document-root directory, including its trailing slash |
 
 ## Technical installation
 

@@ -1,4 +1,4 @@
-name: Deploy to Truehost development
+name: Deploy to Truehost production
 
 on:
   push:
@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: truehost-development
+  group: truehost-production
   cancel-in-progress: true
 
 jobs:
