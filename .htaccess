@@ -6,6 +6,9 @@ DirectoryIndex index.php
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
+    # Never allow uploaded files to run as scripts, even if uploads/.htaccess is absent.
+    RewriteRule ^uploads/.*\.(php[0-9]?|phtml|phar|pht|phps)(/|$) - [F,NC,L]
+
     # Force HTTPS only after SSL is active
     # RewriteCond %{HTTPS} !=on
     # RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]

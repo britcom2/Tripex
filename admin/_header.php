@@ -7,6 +7,7 @@ try {
 }
 $menu = [
     'index.php'       => ['Dashboard', ''],
+    'system.php'      => ['System status', ''],
     'products.php'    => ['Products', 'product_form.php'],
     'stock.php'       => ['Stock control', ''],
     'users.php'       => ['Staff accounts', ''],

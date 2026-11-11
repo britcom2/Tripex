@@ -67,6 +67,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $lowOnly = (string)($_GET['low'] ?? '') === '1';
 $search = trim((string)($_GET['q'] ?? ''));
+$page = max(1, (int)($_GET['page'] ?? 1));
+$per = 50;
 $where = [];
 $params = [];
 if ($lowOnly) {
@@ -78,9 +80,11 @@ if ($search !== '') {
     $params[] = '%' . $search . '%';
 }
 $filter = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+$totalProducts = (int)q("SELECT COUNT(*) FROM products p $filter", $params)->fetchColumn();
+$offset = ($page - 1) * $per;
 $products = q(
     "SELECT p.id, p.name, p.sku, p.unit, p.stock_quantity, p.low_stock_threshold, p.stock_status
-     FROM products p $filter ORDER BY p.name LIMIT 250",
+     FROM products p $filter ORDER BY p.name LIMIT $per OFFSET $offset",
     $params
 )->fetchAll();
 $lowCount = (int)q(
@@ -135,6 +139,7 @@ include __DIR__ . '/_header.php';
     </tbody>
   </table>
 </div>
+<?= pager($totalProducts, $per, $page) ?>
 <section class="panel stock-history">
   <h2>Recent adjustment history</h2>
   <div class="stock-history-scroll">

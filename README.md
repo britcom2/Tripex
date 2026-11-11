@@ -49,6 +49,7 @@ The workflow deliberately does not upload `config.php`, `install.php`, or `uploa
 | Section | What you can do |
 |---|---|
 | Dashboard | Counts, latest enquiries, most viewed products |
+| System status | Truehost readiness checks for PHP, database schema, uploads, HTTPS, installer cleanup and email support |
 | Products | Add / edit / delete, multiple images (choose the main one), price, offer price, unit, stock status, low-stock threshold, specs, visible & featured toggles, **quick price edit in the list**, and CSV import |
 | Stock control | Record signed stock movements with a required reason, review the adjustment history, and filter products below their alert thresholds |
 | Staff accounts | Create admin accounts, reset passwords, disable/reactivate accounts, and delete disabled accounts. All staff accounts currently have full admin access. |
@@ -73,7 +74,7 @@ On existing installations, deploy the update and sign in to the admin panel; the
 - The storefront uses system and serif font stacks so it renders immediately without waiting for external font services.
 - Enquiry emails use PHP `mail()`. If they don't arrive, create a mailbox in cPanel (e.g. `info@yourdomain.com`) and use it as the Email in Site Settings. Enquiries are always saved in the admin panel regardless.
 - Back up regularly: the database (phpMyAdmin → Export) and the `uploads/` folder.
-- Security built in: prepared SQL statements, CSRF tokens on every form, hashed passwords, login rate-limiting, upload validation, PHP execution blocked in `uploads/`, `includes/`, `database/` and `config.php` protected.
+- Security built in: prepared SQL statements, CSRF tokens on every form, hashed passwords, login rate-limiting, upload validation, PHP execution blocked in `uploads/` by the root `.htaccess` (and `uploads/.htaccess` for manual deployments), `includes/` and `database/` protected.
 
 ## Structure
 
