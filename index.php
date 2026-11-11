@@ -8,6 +8,7 @@ $categories = q(
      FROM categories c WHERE c.is_active = 1 ORDER BY c.sort_order, c.name LIMIT 8'
 )->fetchAll();
 $photos = q('SELECT title, filename FROM gallery ORDER BY sort_order, id DESC LIMIT 12')->fetchAll();
+$projectPhotoOffset = count($photos) >= 11 ? 6 : 0;
 $featured = q(product_select() . ' WHERE p.is_active = 1 AND p.is_featured = 1 ORDER BY p.updated_at DESC LIMIT 4')->fetchAll();
 if (!$featured) {
     $featured = q(product_select() . ' WHERE p.is_active = 1 ORDER BY p.created_at DESC LIMIT 4')->fetchAll();
@@ -198,9 +199,10 @@ include __DIR__ . '/includes/header.php';
     </div>
     <div class="home-project-grid">
       <?php for ($i = 0; $i < 5; $i++): ?>
+        <?php $projectPhotoIndex = $projectPhotoOffset + $i; ?>
         <a class="home-project-photo home-project-photo-<?= $i + 1 ?>" href="<?= e(url('gallery')) ?>">
-          <img loading="lazy" decoding="async" src="<?= e($photoAt($i + 6)) ?>"<?= img_srcset_attr($photos[$i + 6]['filename'] ?? null, '(max-width: 520px) 90vw, 35vw') ?> alt="<?= e($photoTitle($i + 6, 'Tripex architectural flooring project')) ?>">
-          <?php if (!empty($photos[$i + 6]['title'])): ?><span><?= e($photos[$i + 6]['title']) ?></span><?php endif; ?>
+          <img loading="lazy" decoding="async" src="<?= e($photoAt($projectPhotoIndex)) ?>"<?= img_srcset_attr($photos[$projectPhotoIndex]['filename'] ?? null, '(max-width: 520px) 90vw, 35vw') ?> alt="<?= e($photoTitle($projectPhotoIndex, 'Tripex architectural flooring project')) ?>">
+          <?php if (!empty($photos[$projectPhotoIndex]['title'])): ?><span><?= e($photos[$projectPhotoIndex]['title']) ?></span><?php endif; ?>
         </a>
       <?php endfor; ?>
     </div>
