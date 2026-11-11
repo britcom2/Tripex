@@ -56,6 +56,6 @@ $wa = preg_replace('/\D/', '', setting('whatsapp'));
   <?php if ($wa): ?><a href="<?= e(url('contact.php?via=whatsapp')) ?>"><span class="mobile-nav-icon" aria-hidden="true">&#9993;</span><span class="mobile-nav-label">WhatsApp</span></a><?php endif; ?>
   <a class="mobile-action-quote <?= $current === 'quote.php' ? 'active' : '' ?>" href="<?= e(url('quote')) ?>"><span class="mobile-nav-icon" aria-hidden="true">&#9998;</span><span class="mobile-nav-label">Quote<?php if (!empty($quoteCount)): ?> (<?= $quoteCount ?>)<?php endif; ?></span></a>
 </nav>
-<script src="<?= e(url('assets/js/enquiry-channel.js')) ?>?v=1" defer></script>
+<script src="<?= e(url('assets/js/enquiry-channel.js')) ?>?v=3" defer></script>
 </body>
 </html>

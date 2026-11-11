@@ -119,7 +119,7 @@ include __DIR__ . '/includes/header.php';
 <section class="section">
   <div class="container account-page">
     <?= flash_render() ?>
-    <?php foreach ($errors as $error): ?><div class="alert alert-error"><?= e($error) ?></div><?php endforeach; ?>
+    <?php foreach ($errors as $error): ?><div class="alert alert-error" role="alert" tabindex="-1"><?= e($error) ?></div><?php endforeach; ?>
     <?php if ($customer): ?>
       <div class="account-heading">
         <div><h2>Hello, <?= e($customer['name']) ?></h2><p><?= e($customer['email']) ?><?= $customer['phone'] ? ' · ' . e($customer['phone']) : '' ?></p></div>
@@ -128,15 +128,22 @@ include __DIR__ . '/includes/header.php';
       <div class="account-content">
         <section>
           <h2>Send an enquiry</h2>
-          <form method="post" class="form">
+          <form method="post" class="form enquiry-form" data-enquiry-form>
             <?= csrf_field() ?><input type="hidden" name="action" value="enquiry">
-            <label>Subject<input name="subject" maxlength="190" value="<?= e($_POST['subject'] ?? '') ?>"></label>
-            <label>Phone / WhatsApp<input name="phone" autocomplete="tel" maxlength="40" value="<?= e($_POST['phone'] ?? $customer['phone']) ?>"></label>
-            <label>Message *<textarea name="message" rows="5" required><?= e($_POST['message'] ?? '') ?></textarea></label>
-            <div class="account-form-actions">
-              <?php if (preg_match('/\d{7,}/', preg_replace('/\D/', '', setting('whatsapp')))): ?><label class="enquiry-channel">Send via<select name="channel" data-enquiry-channel><option value="website" <?= (($_POST['channel'] ?? '') === 'whatsapp') ? '' : 'selected' ?>>Email</option><option value="whatsapp" <?= (($_POST['channel'] ?? '') === 'whatsapp') ? 'selected' : '' ?>>WhatsApp</option></select></label><?php else: ?><input type="hidden" name="channel" value="website"><?php endif; ?>
-              <button class="btn btn-primary" type="submit">Send enquiry</button>
+            <div class="enquiry-form-heading"><span class="enquiry-step">Quick enquiry</span><div><h3>What can we help with?</h3><p>We’ll follow up using your preferred channel.</p></div></div>
+            <div class="row enquiry-fields">
+              <label>Subject <span class="optional-mark">Optional</span><input name="subject" maxlength="190" value="<?= e($_POST['subject'] ?? '') ?>" placeholder="What can we help with?"></label>
+              <label data-phone-field>Phone / WhatsApp <span data-phone-required class="required-mark" <?= (($_POST['channel'] ?? '') !== 'whatsapp') ? 'hidden' : '' ?>>*</span><input name="phone" autocomplete="tel" maxlength="40" value="<?= e($_POST['phone'] ?? $customer['phone']) ?>" placeholder="Include your country code" aria-describedby="enquiry-phone-help"><small class="field-help" id="enquiry-phone-help" data-phone-help <?= (($_POST['channel'] ?? '') !== 'whatsapp') ? 'hidden' : '' ?>>Use at least 7 digits; include your country code if possible.</small></label>
             </div>
+            <label class="enquiry-message-field">Your message <span class="required-mark">*</span><textarea name="message" rows="5" maxlength="5000" required placeholder="Tell us what you have in mind..."><?= e($_POST['message'] ?? '') ?></textarea></label>
+            <?php if (preg_match('/\d{7,}/', preg_replace('/\D/', '', setting('whatsapp')))): ?>
+              <fieldset class="enquiry-channels"><legend>How would you like us to reply?</legend><div class="enquiry-channel-options">
+                <label class="enquiry-channel-card"><input type="radio" name="channel" value="website" data-enquiry-channel aria-describedby="enquiry-channel-note" <?= (($_POST['channel'] ?? '') !== 'whatsapp') ? 'checked' : '' ?>><span class="enquiry-channel-icon" aria-hidden="true">&#9993;</span><span class="enquiry-channel-copy"><strong>Email</strong><small>Use your account email</small></span><span class="enquiry-channel-check" aria-hidden="true"></span></label>
+                <label class="enquiry-channel-card enquiry-channel-whatsapp"><input type="radio" name="channel" value="whatsapp" data-enquiry-channel aria-describedby="enquiry-channel-note" <?= (($_POST['channel'] ?? '') === 'whatsapp') ? 'checked' : '' ?>><span class="enquiry-channel-icon" aria-hidden="true">&#10148;</span><span class="enquiry-channel-copy"><strong>WhatsApp</strong><small>Continue the conversation there</small></span><span class="enquiry-channel-check" aria-hidden="true"></span></label>
+              </div></fieldset>
+            <?php else: ?><input type="hidden" name="channel" value="website"><?php endif; ?>
+            <p class="enquiry-channel-note" id="enquiry-channel-note" data-channel-note data-email-note="We’ll reply to the email address saved to your account." data-whatsapp-note="Add your WhatsApp number above. Your enquiry will be ready to send in WhatsApp." aria-live="polite"><?= (($_POST['channel'] ?? '') === 'whatsapp') ? 'Add your WhatsApp number above. Your enquiry will be ready to send in WhatsApp.' : 'We’ll reply to the email address saved to your account.' ?></p>
+            <div class="enquiry-submit-row"><button class="btn btn-primary enquiry-submit" type="submit" data-enquiry-submit data-email-label="Send enquiry" data-whatsapp-label="Continue to WhatsApp"><span data-submit-label><?= (($_POST['channel'] ?? '') === 'whatsapp') ? 'Continue to WhatsApp' : 'Send enquiry' ?></span><span aria-hidden="true">&rarr;</span></button><span class="enquiry-submit-note"><span aria-hidden="true">&#128274;</span> Your details are only used to respond to you.</span></div>
           </form>
         </section>
         <section>

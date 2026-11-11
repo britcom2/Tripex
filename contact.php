@@ -55,25 +55,43 @@ $map = setting('map_embed');
     <div>
       <?= flash_render() ?>
       <?php if ($product): ?><div class="alert alert-success">Enquiring about: <strong><?= e($product['name']) ?></strong></div><?php endif; ?>
-      <div class="contact-intro"><span class="about-kicker">Start a conversation</span><h2>Tell us what you have in mind.</h2><p>For a product or project quote, our guided quote request helps us understand your materials, space and timing.</p><a class="btn btn-primary" href="<?= e(url('quote')) ?>">Build a quote request &rarr;</a></div>
-      <h2 class="contact-form-heading">Or send us a message</h2>
-      <?php foreach ($errors as $er): ?><div class="alert alert-error"><?= e($er) ?></div><?php endforeach; ?>
-      <form method="post" class="form" data-enquiry-form>
+      <div class="enquiry-page-intro"><span class="about-kicker">A considered start</span><h2>Let’s find the right surface for your space.</h2><p>Share a few details and our flooring team will help you take the next step.</p><a href="<?= e(url('quote')) ?>">Planning a project? Build a detailed quote request <span aria-hidden="true">&rarr;</span></a></div>
+      <?php foreach ($errors as $er): ?><div class="alert alert-error" role="alert" tabindex="-1"><?= e($er) ?></div><?php endforeach; ?>
+      <form method="post" class="form enquiry-form contact-enquiry-form" data-enquiry-form>
         <?= csrf_field() ?>
         <?php if ($product): ?><input type="hidden" name="product_id" value="<?= (int)$product['id'] ?>"><?php endif; ?>
         <div class="field-hp"><input type="text" name="website" tabindex="-1" autocomplete="off"></div>
-        <div class="row">
-          <label>Name *<input name="name" required value="<?= e($_POST['name'] ?? '') ?>"></label>
-          <label data-enquiry-email-field <?= $selectedChannel === 'whatsapp' ? 'hidden' : '' ?>>Email *<input type="email" name="email" value="<?= e($_POST['email'] ?? '') ?>"></label>
+        <div class="enquiry-form-heading"><span class="enquiry-step">Quick enquiry</span><div><h2>Tell us a little about it</h2><p>We’ll get back to you using your preferred channel.</p></div></div>
+        <div class="row enquiry-fields">
+          <label>Your name <span class="required-mark">*</span><input name="name" autocomplete="name" maxlength="120" required value="<?= e($_POST['name'] ?? '') ?>" placeholder="e.g. Alex"></label>
+          <label data-enquiry-email-field <?= $selectedChannel === 'whatsapp' ? 'hidden' : '' ?>>Email address <span class="required-mark">*</span><input type="email" name="email" autocomplete="email" maxlength="160" value="<?= e($_POST['email'] ?? '') ?>" placeholder="you@example.com"></label>
+          <label data-phone-field>Phone / WhatsApp <span data-phone-required class="required-mark" <?= $selectedChannel !== 'whatsapp' ? 'hidden' : '' ?>>*</span><input name="phone" autocomplete="tel" maxlength="40" value="<?= e($_POST['phone'] ?? '') ?>" placeholder="Include your country code" aria-describedby="enquiry-phone-help"><small class="field-help" id="enquiry-phone-help" data-phone-help <?= $selectedChannel !== 'whatsapp' ? 'hidden' : '' ?>>Use at least 7 digits; include your country code if possible.</small></label>
+          <label>Subject <span class="optional-mark">Optional</span><input name="subject" maxlength="190" value="<?= e($_POST['subject'] ?? ($product ? 'Enquiry: ' . $product['name'] : '')) ?>" placeholder="What can we help with?"></label>
         </div>
-        <div class="row">
-          <label>Phone<input name="phone" value="<?= e($_POST['phone'] ?? '') ?>"></label>
-          <label>Subject<input name="subject" value="<?= e($_POST['subject'] ?? ($product ? 'Enquiry: ' . $product['name'] : '')) ?>"></label>
-        </div>
-        <label>Message *<textarea name="message" rows="6" required><?= e($_POST['message'] ?? '') ?></textarea></label>
-        <div class="account-form-actions">
-          <?php if ($whatsappAvailable): ?><label class="enquiry-channel">Send via<select name="channel" data-enquiry-channel><option value="website" <?= $selectedChannel === 'website' ? 'selected' : '' ?>>Email</option><option value="whatsapp" <?= $selectedChannel === 'whatsapp' ? 'selected' : '' ?>>WhatsApp</option></select></label><?php else: ?><input type="hidden" name="channel" value="website"><?php endif; ?>
-          <button class="btn btn-primary" type="submit">Send Message</button>
+        <label class="enquiry-message-field">Your message <span class="required-mark">*</span><textarea name="message" rows="5" maxlength="5000" required placeholder="Tell us about the room, product or project you have in mind..."><?= e($_POST['message'] ?? '') ?></textarea></label>
+        <?php if ($whatsappAvailable): ?>
+          <fieldset class="enquiry-channels">
+            <legend>How would you like us to reply?</legend>
+            <div class="enquiry-channel-options">
+              <label class="enquiry-channel-card">
+                <input type="radio" name="channel" value="website" data-enquiry-channel aria-describedby="enquiry-channel-note" <?= $selectedChannel === 'website' ? 'checked' : '' ?>>
+                <span class="enquiry-channel-icon" aria-hidden="true">&#9993;</span>
+                <span class="enquiry-channel-copy"><strong>Email</strong><small>A personal reply to your inbox</small></span>
+                <span class="enquiry-channel-check" aria-hidden="true"></span>
+              </label>
+              <label class="enquiry-channel-card enquiry-channel-whatsapp">
+                <input type="radio" name="channel" value="whatsapp" data-enquiry-channel aria-describedby="enquiry-channel-note" <?= $selectedChannel === 'whatsapp' ? 'checked' : '' ?>>
+                <span class="enquiry-channel-icon" aria-hidden="true">&#10148;</span>
+                <span class="enquiry-channel-copy"><strong>WhatsApp</strong><small>Continue the conversation there</small></span>
+                <span class="enquiry-channel-check" aria-hidden="true"></span>
+              </label>
+            </div>
+          </fieldset>
+        <?php else: ?><input type="hidden" name="channel" value="website"><?php endif; ?>
+        <p class="enquiry-channel-note" id="enquiry-channel-note" data-channel-note data-email-note="We’ll use your email address to reply to this enquiry." data-whatsapp-note="Add your WhatsApp number above. Your enquiry will be ready to send in WhatsApp." aria-live="polite"><?= $selectedChannel === 'whatsapp' ? 'Add your WhatsApp number above. Your enquiry will be ready to send in WhatsApp.' : 'We’ll use your email address to reply to this enquiry.' ?></p>
+        <div class="enquiry-submit-row">
+          <button class="btn btn-primary enquiry-submit" type="submit" data-enquiry-submit data-email-label="Send enquiry" data-whatsapp-label="Continue to WhatsApp"><span data-submit-label><?= $selectedChannel === 'whatsapp' ? 'Continue to WhatsApp' : 'Send enquiry' ?></span><span aria-hidden="true">&rarr;</span></button>
+          <span class="enquiry-submit-note"><span aria-hidden="true">&#128274;</span> Your details are only used to respond to you.</span>
         </div>
       </form>
     </div>

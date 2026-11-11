@@ -26,7 +26,7 @@ $quoteCount = is_array($quoteBasket) ? count($quoteBasket) : 0;
 <meta property="og:title" content="<?= e($fullTitle) ?>">
 <meta property="og:description" content="<?= e($desc) ?>">
 <?php if (!empty($ogImage)): ?><meta property="og:image" content="<?= e($ogImage) ?>"><?php endif; ?>
-<link rel="stylesheet" href="<?= e(url('assets/css/style.css')) ?>?v=14">
+<link rel="stylesheet" href="<?= e(url('assets/css/style.css')) ?>?v=16">
 </head>
 <body>
 <div class="topbar">

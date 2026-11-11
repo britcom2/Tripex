@@ -181,7 +181,7 @@ include __DIR__ . '/includes/header.php';
   <div class="container quote-layout">
     <div class="quote-main">
       <?= flash_render() ?>
-      <?php foreach ($errors as $error): ?><div class="alert alert-error"><?= e($error) ?></div><?php endforeach; ?>
+      <?php foreach ($errors as $error): ?><div class="alert alert-error" role="alert" tabindex="-1"><?= e($error) ?></div><?php endforeach; ?>
       <div class="quote-section-heading"><span class="quote-step">01</span><div><h2>Your selected flooring</h2><p>Add products from the catalogue, and include quantities if you know them.</p></div></div>
 
       <form method="post" class="quote-form" data-enquiry-form>
@@ -203,23 +203,30 @@ include __DIR__ . '/includes/header.php';
       <?php endif; ?>
 
       <div class="quote-section-heading quote-contact-heading"><span class="quote-step">02</span><div><h2>Tell us about your project</h2><p>Share a few details so our team can prepare a useful, tailored response.</p></div></div>
-        <div class="row">
-          <label>Your name *<input name="name" autocomplete="name" required maxlength="120" value="<?= e($_POST['name'] ?? '') ?>"></label>
-          <label data-enquiry-email-field <?= (($_POST['channel'] ?? '') === 'whatsapp') ? 'hidden' : '' ?>>Email address *<input type="email" name="email" autocomplete="email" value="<?= e($_POST['email'] ?? '') ?>"></label>
-          <label>Phone / WhatsApp<input name="phone" autocomplete="tel" maxlength="40" value="<?= e($_POST['phone'] ?? '') ?>"></label>
-          <label>Project location<input name="location" autocomplete="address-level2" maxlength="190" placeholder="Town or neighbourhood" value="<?= e($_POST['location'] ?? '') ?>"></label>
+        <div class="row enquiry-fields">
+          <label>Your name <span class="required-mark">*</span><input name="name" autocomplete="name" required maxlength="120" value="<?= e($_POST['name'] ?? '') ?>" placeholder="e.g. Alex"></label>
+          <label data-enquiry-email-field <?= (($_POST['channel'] ?? '') === 'whatsapp') ? 'hidden' : '' ?>>Email address <span class="required-mark">*</span><input type="email" name="email" autocomplete="email" maxlength="160" value="<?= e($_POST['email'] ?? '') ?>" placeholder="you@example.com"></label>
+          <label data-phone-field>Phone / WhatsApp <span data-phone-required class="required-mark" <?= (($_POST['channel'] ?? '') !== 'whatsapp') ? 'hidden' : '' ?>>*</span><input name="phone" autocomplete="tel" maxlength="40" value="<?= e($_POST['phone'] ?? '') ?>" placeholder="Include your country code" aria-describedby="enquiry-phone-help"><small class="field-help" id="enquiry-phone-help" data-phone-help <?= (($_POST['channel'] ?? '') !== 'whatsapp') ? 'hidden' : '' ?>>Use at least 7 digits; include your country code if possible.</small></label>
+          <label>Project location <span class="optional-mark">Optional</span><input name="location" autocomplete="address-level2" maxlength="190" placeholder="Town or neighbourhood" value="<?= e($_POST['location'] ?? '') ?>"></label>
         </div>
         <div class="row">
           <label>Space type<select name="project_type"><option value="">Select a space</option><?php foreach ($allowedTypes as $type): ?><option value="<?= e($type) ?>" <?= ($_POST['project_type'] ?? '') === $type ? 'selected' : '' ?>><?= e($type) ?></option><?php endforeach; ?></select></label>
           <label>When are you planning to start?<select name="timeline"><option value="">Select a timeline</option><?php foreach ($allowedTimelines as $timeline): ?><option value="<?= e($timeline) ?>" <?= ($_POST['timeline'] ?? '') === $timeline ? 'selected' : '' ?>><?= e($timeline) ?></option><?php endforeach; ?></select></label>
         </div>
         <label class="quote-install-option"><input type="checkbox" name="installation" value="1" <?= !empty($_POST['installation']) ? 'checked' : '' ?>><span>Please include professional installation in the quote</span></label>
-        <label>Project notes<textarea name="notes" rows="4" maxlength="3000" placeholder="Room dimensions, preferred materials, plans, or anything else we should know"><?= e($_POST['notes'] ?? '') ?></textarea></label>
+        <label class="enquiry-message-field">Project notes <span class="optional-mark">Optional</span><textarea name="notes" rows="4" maxlength="3000" placeholder="Room dimensions, preferred materials, plans, or anything else we should know"><?= e($_POST['notes'] ?? '') ?></textarea></label>
         <p class="quote-privacy">Your details will only be used to respond to this project enquiry.</p>
-        <div class="account-form-actions">
-          <?php if ($whatsappAvailable): ?><label class="enquiry-channel">Send via<select name="channel" data-enquiry-channel><option value="website" <?= (($_POST['channel'] ?? '') === 'whatsapp') ? '' : 'selected' ?>>Email</option><option value="whatsapp" <?= (($_POST['channel'] ?? '') === 'whatsapp') ? 'selected' : '' ?>>WhatsApp</option></select></label><?php else: ?><input type="hidden" name="channel" value="website"><?php endif; ?>
-          <button class="btn btn-primary" type="submit" name="action" value="request_quote" <?= !$products ? 'disabled' : '' ?>>Send quote request <span aria-hidden="true">&rarr;</span></button>
-        </div>
+        <?php if ($whatsappAvailable): ?>
+          <fieldset class="enquiry-channels">
+            <legend>How would you like us to reply?</legend>
+            <div class="enquiry-channel-options">
+              <label class="enquiry-channel-card"><input type="radio" name="channel" value="website" data-enquiry-channel aria-describedby="enquiry-channel-note" <?= (($_POST['channel'] ?? '') !== 'whatsapp') ? 'checked' : '' ?>><span class="enquiry-channel-icon" aria-hidden="true">&#9993;</span><span class="enquiry-channel-copy"><strong>Email</strong><small>A personal reply to your inbox</small></span><span class="enquiry-channel-check" aria-hidden="true"></span></label>
+              <label class="enquiry-channel-card enquiry-channel-whatsapp"><input type="radio" name="channel" value="whatsapp" data-enquiry-channel aria-describedby="enquiry-channel-note" <?= (($_POST['channel'] ?? '') === 'whatsapp') ? 'checked' : '' ?>><span class="enquiry-channel-icon" aria-hidden="true">&#10148;</span><span class="enquiry-channel-copy"><strong>WhatsApp</strong><small>Continue the conversation there</small></span><span class="enquiry-channel-check" aria-hidden="true"></span></label>
+            </div>
+          </fieldset>
+        <?php else: ?><input type="hidden" name="channel" value="website"><?php endif; ?>
+        <p class="enquiry-channel-note" id="enquiry-channel-note" data-channel-note data-email-note="We’ll use your email address to reply to this enquiry." data-whatsapp-note="Add your WhatsApp number above. Your enquiry will be ready to send in WhatsApp." aria-live="polite"><?= (($_POST['channel'] ?? '') === 'whatsapp') ? 'Add your WhatsApp number above. Your enquiry will be ready to send in WhatsApp.' : 'We’ll use your email address to reply to this enquiry.' ?></p>
+        <div class="enquiry-submit-row"><button class="btn btn-primary enquiry-submit" type="submit" name="action" value="request_quote" data-enquiry-submit data-email-label="Send quote request" data-whatsapp-label="Continue to WhatsApp" <?= !$products ? 'disabled' : '' ?>><span data-submit-label><?= (($_POST['channel'] ?? '') === 'whatsapp') ? 'Continue to WhatsApp' : 'Send quote request' ?></span><span aria-hidden="true">&rarr;</span></button><span class="enquiry-submit-note"><span aria-hidden="true">&#128274;</span> Your details are only used to respond to this project enquiry.</span></div>
       </form>
     </div>
     <aside class="quote-aside">
