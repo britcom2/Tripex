@@ -144,7 +144,19 @@ function admin_inventory_schema_ready(): bool
     $hasNullableEnquiryEmail = (bool)q(
         "SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'enquiries' AND COLUMN_NAME = 'email' AND IS_NULLABLE = 'YES'"
     )->fetchColumn();
-    return $hasStockAdjustments && $hasCustomers && $hasNullableEnquiryEmail;
+    $hasCustomerIndex = (bool)q(
+        "SELECT COUNT(*) FROM information_schema.STATISTICS
+         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'enquiries'
+           AND COLUMN_NAME = 'customer_id' AND SEQ_IN_INDEX = 1"
+    )->fetchColumn();
+    $hasCustomerForeignKey = (bool)q(
+        "SELECT COUNT(*) FROM information_schema.KEY_COLUMN_USAGE
+         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'enquiries'
+           AND COLUMN_NAME = 'customer_id' AND REFERENCED_TABLE_NAME = 'customers'
+           AND REFERENCED_COLUMN_NAME = 'id'"
+    )->fetchColumn();
+    return $hasStockAdjustments && $hasCustomers && $hasNullableEnquiryEmail
+        && $hasCustomerIndex && $hasCustomerForeignKey;
 }
 
 function require_admin(bool $requireInventorySchema = true): void

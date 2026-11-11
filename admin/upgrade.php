@@ -19,6 +19,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 [$table]
             )->fetchColumn();
         };
+        $customerIndexExists = (bool)q(
+            "SELECT COUNT(*) FROM information_schema.STATISTICS
+             WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'enquiries'
+               AND COLUMN_NAME = 'customer_id' AND SEQ_IN_INDEX = 1"
+        )->fetchColumn();
+        $customerForeignKeyExists = (bool)q(
+            "SELECT COUNT(*) FROM information_schema.KEY_COLUMN_USAGE
+             WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'enquiries'
+               AND COLUMN_NAME = 'customer_id' AND REFERENCED_TABLE_NAME = 'customers'
+               AND REFERENCED_COLUMN_NAME = 'id'"
+        )->fetchColumn();
 
         if (!$columnExists('admins', 'is_active')) {
             db()->exec('ALTER TABLE admins ADD COLUMN is_active TINYINT(1) NOT NULL DEFAULT 1 AFTER password_hash');
@@ -43,7 +54,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         if (!$columnExists('enquiries', 'customer_id')) {
             db()->exec('ALTER TABLE enquiries ADD COLUMN customer_id INT UNSIGNED NULL AFTER product_id');
+        }
+        if (!$customerIndexExists) {
             db()->exec('ALTER TABLE enquiries ADD KEY idx_enquiry_customer (customer_id)');
+        }
+        if (!$customerForeignKeyExists) {
             db()->exec('ALTER TABLE enquiries ADD CONSTRAINT fk_enquiry_customer FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE SET NULL');
         }
         if (!$columnExists('enquiries', 'source')) {
