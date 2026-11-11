@@ -11,6 +11,17 @@ $schemaReady = admin_inventory_schema_ready();
 $uploadsReady = is_dir($uploadsPath) && is_writable($uploadsPath);
 $gdAvailable = extension_loaded('gd');
 $mailAvailable = function_exists('mail');
+$release = null;
+$releaseFile = ROOT . '/deployment.json';
+if (is_readable($releaseFile)) {
+  $releaseData = json_decode((string)file_get_contents($releaseFile), true);
+  if (is_array($releaseData)
+    && preg_match('/^[a-f0-9]{40}$/i', (string)($releaseData['commit'] ?? ''))
+    && !empty($releaseData['deployed_at'])
+    && strtotime((string)$releaseData['deployed_at']) !== false) {
+    $release = $releaseData;
+  }
+}
 $checks = [
     [
         'name' => 'PHP runtime',
@@ -26,6 +37,13 @@ $checks = [
         'name' => 'Database schema',
         'ok' => $schemaReady,
         'detail' => $schemaReady ? 'Current schema is installed' : 'Run the Database upgrade from the admin panel',
+    ],
+    [
+      'name' => 'Deployed revision',
+      'ok' => $release !== null,
+      'detail' => $release
+        ? substr($release['commit'], 0, 12) . ' · ' . gmdate('d M Y, H:i', strtotime($release['deployed_at'])) . ' UTC'
+        : 'No release marker found. Push to main and confirm the GitHub Actions deployment succeeds.',
     ],
     [
         'name' => 'Uploads directory',

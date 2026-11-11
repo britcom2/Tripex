@@ -31,7 +31,7 @@ If the installer cannot write `config.php`, copy `config.sample.php` to `config.
 
 ## GitHub Actions deployment to Truehost
 
-The workflow at `.github/workflows/deploy-truehost.yml` deploys each push to `main` over FTPS. In the GitHub repository, open **Settings → Secrets and variables → Actions** and add these repository secrets:
+The workflow at `.github/workflows/deploy-truehost.yml` validates PHP syntax and deploys each push to `main` over FTPS. It uploads a `deployment.json` release marker; check **Admin → System status → Deployed revision** to confirm which commit is live. If the marker does not change, confirm the commit was pushed to `main` and its GitHub Actions run completed successfully. In the GitHub repository, open **Settings → Secrets and variables → Actions** and add these repository secrets:
 
 | Secret | Value |
 |---|---|

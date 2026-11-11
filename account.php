@@ -56,13 +56,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif ($action === 'login') {
         $email = trim((string)($_POST['email'] ?? ''));
         $password = (string)($_POST['password'] ?? '');
+      $ip = client_ip();
+      q('DELETE FROM login_attempts WHERE attempted_at < (NOW() - INTERVAL 1 DAY)');
+      $recent = (int)q('SELECT COUNT(*) FROM login_attempts WHERE ip = ? AND attempted_at > (NOW() - INTERVAL 15 MINUTE)', [$ip])->fetchColumn();
+      if ($recent >= 8) {
+        $errors[] = 'Too many sign-in attempts. Please wait 15 minutes and try again.';
+      } else {
         $row = q('SELECT id, password_hash FROM customers WHERE email = ? LIMIT 1', [$email])->fetch();
         if ($row && password_verify($password, $row['password_hash'])) {
-            session_regenerate_id(true);
-            $_SESSION['customer_id'] = (int)$row['id'];
-            redirect('account.php');
+          session_regenerate_id(true);
+          $_SESSION['customer_id'] = (int)$row['id'];
+          q('DELETE FROM login_attempts WHERE ip = ?', [$ip]);
+          redirect('account.php');
         }
+        q('INSERT INTO login_attempts (ip) VALUES (?)', [$ip]);
         $errors[] = 'The email address or password is incorrect.';
+        }
     } elseif ($action === 'logout') {
         unset($_SESSION['customer_id']);
         session_regenerate_id(true);
