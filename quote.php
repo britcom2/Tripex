@@ -12,6 +12,7 @@ if (!is_array($basket)) {
 
 $errors = [];
 $sent = false;
+$whatsappAvailable = (bool)preg_match('/\d{7,}/', preg_replace('/\D/', '', setting('whatsapp')));
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_require();
     $action = (string)($_POST['action'] ?? '');
@@ -61,6 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } elseif (!$basket) {
             $errors[] = 'Add at least one product to your quote list.';
         } else {
+            $channel = (($_POST['channel'] ?? '') === 'whatsapp') ? 'whatsapp' : 'website';
             $name = trim((string)($_POST['name'] ?? ''));
             $email = trim((string)($_POST['email'] ?? ''));
             $phone = trim((string)($_POST['phone'] ?? ''));
@@ -73,8 +75,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($name === '' || strlen($name) > 120) {
                 $errors[] = 'Enter your name (up to 120 characters).';
             }
-            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            if ($channel === 'website' && (!filter_var($email, FILTER_VALIDATE_EMAIL) || strlen($email) > 160)) {
                 $errors[] = 'Enter a valid email address.';
+            }
+            if ($channel === 'whatsapp' && !$whatsappAvailable) {
+                $errors[] = 'WhatsApp enquiries are unavailable right now. Please send a website enquiry instead.';
+            }
+            if ($channel === 'whatsapp' && strlen(preg_replace('/\D/', '', $phone)) < 7) {
+                $errors[] = 'Please include a valid phone or WhatsApp number so we can reply.';
             }
             if (strlen($phone) > 40 || strlen($location) > 190 || strlen($notes) > 3000) {
                 $errors[] = 'Phone, location, or project notes exceed the allowed length.';
@@ -124,12 +132,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $_POST['name'] = $name;
                         $_POST['email'] = $email;
                         $_POST['phone'] = $phone;
+                        $_POST['channel'] = $channel;
                         $_POST['subject'] = 'Flooring quote request' . ($type ? ' — ' . $type : '');
                         $_POST['message'] = $message;
                         list($sent, $submitErrors) = handle_enquiry(null);
                         $errors = array_merge($errors, $submitErrors);
                         if ($sent) {
                             unset($_SESSION['quote_basket']);
+                            if ($channel === 'whatsapp') {
+                                $whatsappMessage = "Hello, I am {$name}. I sent a flooring quote enquiry through the website.\n\n" . $message;
+                                redirect(whatsapp_link(setting('whatsapp'), $whatsappMessage));
+                            }
                             flash('success', 'Your quote request has been received. Our team will be in touch shortly.');
                             redirect('quote.php?sent=1');
                         }
@@ -171,7 +184,7 @@ include __DIR__ . '/includes/header.php';
       <?php foreach ($errors as $error): ?><div class="alert alert-error"><?= e($error) ?></div><?php endforeach; ?>
       <div class="quote-section-heading"><span class="quote-step">01</span><div><h2>Your selected flooring</h2><p>Add products from the catalogue, and include quantities if you know them.</p></div></div>
 
-      <form method="post" class="quote-form">
+      <form method="post" class="quote-form" data-enquiry-form>
         <?= csrf_field() ?>
       <?php if ($products): ?>
         <div class="quote-list-form">
@@ -192,7 +205,7 @@ include __DIR__ . '/includes/header.php';
       <div class="quote-section-heading quote-contact-heading"><span class="quote-step">02</span><div><h2>Tell us about your project</h2><p>Share a few details so our team can prepare a useful, tailored response.</p></div></div>
         <div class="row">
           <label>Your name *<input name="name" autocomplete="name" required maxlength="120" value="<?= e($_POST['name'] ?? '') ?>"></label>
-          <label>Email address *<input type="email" name="email" autocomplete="email" required value="<?= e($_POST['email'] ?? '') ?>"></label>
+          <label data-enquiry-email-field <?= (($_POST['channel'] ?? '') === 'whatsapp') ? 'hidden' : '' ?>>Email address *<input type="email" name="email" autocomplete="email" value="<?= e($_POST['email'] ?? '') ?>"></label>
           <label>Phone / WhatsApp<input name="phone" autocomplete="tel" maxlength="40" value="<?= e($_POST['phone'] ?? '') ?>"></label>
           <label>Project location<input name="location" autocomplete="address-level2" maxlength="190" placeholder="Town or neighbourhood" value="<?= e($_POST['location'] ?? '') ?>"></label>
         </div>
@@ -203,7 +216,10 @@ include __DIR__ . '/includes/header.php';
         <label class="quote-install-option"><input type="checkbox" name="installation" value="1" <?= !empty($_POST['installation']) ? 'checked' : '' ?>><span>Please include professional installation in the quote</span></label>
         <label>Project notes<textarea name="notes" rows="4" maxlength="3000" placeholder="Room dimensions, preferred materials, plans, or anything else we should know"><?= e($_POST['notes'] ?? '') ?></textarea></label>
         <p class="quote-privacy">Your details will only be used to respond to this project enquiry.</p>
-        <button class="btn btn-primary" type="submit" name="action" value="request_quote" <?= !$products ? 'disabled' : '' ?>>Send quote request <span aria-hidden="true">&rarr;</span></button>
+        <div class="account-form-actions">
+          <?php if ($whatsappAvailable): ?><label class="enquiry-channel">Send via<select name="channel" data-enquiry-channel><option value="website" <?= (($_POST['channel'] ?? '') === 'whatsapp') ? '' : 'selected' ?>>Email</option><option value="whatsapp" <?= (($_POST['channel'] ?? '') === 'whatsapp') ? 'selected' : '' ?>>WhatsApp</option></select></label><?php else: ?><input type="hidden" name="channel" value="website"><?php endif; ?>
+          <button class="btn btn-primary" type="submit" name="action" value="request_quote" <?= !$products ? 'disabled' : '' ?>>Send quote request <span aria-hidden="true">&rarr;</span></button>
+        </div>
       </form>
     </div>
     <aside class="quote-aside">

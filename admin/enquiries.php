@@ -39,10 +39,14 @@ include __DIR__ . '/_header.php';
   <div class="panel">
     <h2><?= e($view['subject'] ?: 'Enquiry from ' . $view['name']) ?></h2>
     <p class="muted"><?= e(date('d M Y, H:i', strtotime($view['created_at']))) ?><?= $view['product'] ? ' · Product: <a href="' . e(product_url($view['pslug'])) . '" target="_blank" rel="noopener">' . e($view['product']) . '</a>' : '' ?></p>
-    <p><strong><?= e($view['name']) ?></strong> &lt;<a href="mailto:<?= e($view['email']) ?>"><?= e($view['email']) ?></a>&gt;<?= $view['phone'] ? ' · <a href="tel:' . e($view['phone']) . '">' . e($view['phone']) . '</a>' : '' ?></p>
+    <p><strong><?= e($view['name']) ?></strong><?php if ($view['email']): ?> &lt;<a href="mailto:<?= e($view['email']) ?>"><?= e($view['email']) ?></a>&gt;<?php else: ?> · No email provided<?php endif; ?><?= $view['phone'] ? ' · <a href="tel:' . e($view['phone']) . '">' . e($view['phone']) . '</a>' : '' ?></p>
     <div class="msg"><?= nl2br(e($view['message'])) ?></div>
     <p>
-      <a class="btn btn-primary" href="mailto:<?= e($view['email']) ?>?subject=<?= rawurlencode('Re: ' . ($view['subject'] ?: 'Your enquiry')) ?>">Reply by email</a>
+      <?php if ($view['email']): ?><a class="btn btn-primary" href="mailto:<?= e($view['email']) ?>?subject=<?= rawurlencode('Re: ' . ($view['subject'] ?: 'Your enquiry')) ?>">Reply by email</a><?php endif; ?>
+      <?php if ($view['phone']): ?>
+        <?php $whatsappReply = whatsapp_link((string)$view['phone'], 'Hello ' . $view['name'] . ', thanks for your enquiry' . ($view['subject'] ? ' about ' . $view['subject'] : '') . '.'); ?>
+        <?php if ($whatsappReply): ?><a class="btn" href="<?= e($whatsappReply) ?>" target="_blank" rel="noopener">Reply via WhatsApp</a><?php endif; ?>
+      <?php endif; ?>
       <a class="btn" href="enquiries.php">Back</a>
       <form method="post" class="inline" data-confirm="Delete this enquiry?"><?= csrf_field() ?><input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="<?= (int)$view['id'] ?>"><button class="btn btn-danger">Delete</button></form>
     </p>
@@ -50,17 +54,18 @@ include __DIR__ . '/_header.php';
 <?php endif; ?>
 <div class="panel nopad">
   <table class="tbl wide">
-    <thead><tr><th>From</th><th>About</th><th>Contact</th><th>Received</th><th class="r"></th></tr></thead>
+    <thead><tr><th>From</th><th>About</th><th>Contact</th><th>Channel</th><th>Received</th><th class="r"></th></tr></thead>
     <?php foreach ($rows as $r): ?>
       <tr class="<?= $r['is_read'] ? '' : 'unread' ?>">
         <td><a href="?view=<?= (int)$r['id'] ?>"><strong><?= e($r['name']) ?></strong></a></td>
         <td><?= e($r['product'] ?: ($r['subject'] ?: 'General enquiry')) ?><br><small class="muted"><?= e(excerpt($r['message'], 70)) ?></small></td>
-        <td><?= e($r['email']) ?><br><small class="muted"><?= e($r['phone']) ?></small></td>
+        <td><?= e($r['email'] ?: 'No email') ?><br><small class="muted"><?= e($r['phone']) ?></small></td>
+        <td><?= $r['source'] === 'whatsapp' ? 'WhatsApp' : 'Website' ?></td>
         <td><small><?= e(date('d M Y, H:i', strtotime($r['created_at']))) ?></small></td>
         <td class="r"><a class="btn btn-sm" href="?view=<?= (int)$r['id'] ?>">Open</a></td>
       </tr>
     <?php endforeach; ?>
-    <?php if (!$rows): ?><tr><td colspan="5" class="muted center">No enquiries yet.</td></tr><?php endif; ?>
+    <?php if (!$rows): ?><tr><td colspan="6" class="muted center">No enquiries yet.</td></tr><?php endif; ?>
   </table>
 </div>
 <?= pager($total, $per, $page) ?>

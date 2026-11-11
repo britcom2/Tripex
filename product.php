@@ -14,10 +14,26 @@ if (!$p) {
 
 $sent = false;
 $errors = [];
+$whatsappAvailable = (bool)preg_match('/\d{7,}/', preg_replace('/\D/', '', setting('whatsapp')));
+$selectedChannel = (($_POST['channel'] ?? '') === 'whatsapp' && $whatsappAvailable) ? 'whatsapp' : 'website';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $_POST['subject'] = 'Enquiry: ' . $p['name'];
+  $channel = $selectedChannel;
+  if ($channel === 'whatsapp' && !preg_match('/\d{7,}/', preg_replace('/\D/', '', setting('whatsapp')))) {
+    $errors[] = 'WhatsApp enquiries are unavailable right now. Please send a website enquiry instead.';
+    $sent = false;
+  } elseif ($channel === 'whatsapp' && strlen(preg_replace('/\D/', '', (string)($_POST['phone'] ?? ''))) < 7) {
+    $errors[] = 'Please include a valid phone or WhatsApp number so we can reply.';
+    $sent = false;
+  } else {
     list($sent, $errors) = handle_enquiry((int)$p['id']);
+  }
     if ($sent) {
+    if ($channel === 'whatsapp') {
+      $name = trim((string)$_POST['name']);
+      $message = "Hello, I am {$name}. I sent an enquiry about {$p['name']} through the website.\n\n" . trim((string)$_POST['message']);
+      redirect(whatsapp_link(setting('whatsapp'), $message));
+    }
         flash('success', 'Thank you! Your enquiry has been sent. We will get back to you shortly.');
         redirect('product/' . $p['slug'] . '#enquire');
     }
@@ -78,7 +94,7 @@ include __DIR__ . '/includes/header.php';
         </form>
         <a class="btn btn-outline" href="#enquire">Ask about this product</a>
         <?php $wa = preg_replace('/\D/', '', setting('whatsapp')); if ($wa): ?>
-          <a class="btn btn-outline" target="_blank" rel="noopener" href="https://wa.me/<?= e($wa) ?>?text=<?= rawurlencode('Hello, I am interested in ' . $p['name']) ?>">WhatsApp</a>
+          <a class="btn btn-outline" href="<?= e(url('contact.php?via=whatsapp&product_id=' . (int)$p['id'])) ?>">Enquire via WhatsApp</a>
         <?php endif; ?>
       </div>
     </div>
@@ -97,16 +113,19 @@ include __DIR__ . '/includes/header.php';
     <div class="enquiry-box" id="enquire">
       <h3>Enquire about this product</h3>
       <?php foreach ($errors as $er): ?><div class="alert alert-error"><?= e($er) ?></div><?php endforeach; ?>
-      <form method="post" class="form">
+      <form method="post" class="form" data-enquiry-form>
         <?= csrf_field() ?>
         <div class="field-hp"><input type="text" name="website" tabindex="-1" autocomplete="off"></div>
         <div class="row">
           <label>Name *<input name="name" required value="<?= e($_POST['name'] ?? '') ?>"></label>
-          <label>Email *<input type="email" name="email" required value="<?= e($_POST['email'] ?? '') ?>"></label>
+          <label data-enquiry-email-field <?= $selectedChannel === 'whatsapp' ? 'hidden' : '' ?>>Email *<input type="email" name="email" value="<?= e($_POST['email'] ?? '') ?>"></label>
           <label>Phone<input name="phone" value="<?= e($_POST['phone'] ?? '') ?>"></label>
         </div>
         <label>Message *<textarea name="message" rows="4" required><?= e($_POST['message'] ?? 'I would like a quote for ' . $p['name'] . '. Area needed (m²): ') ?></textarea></label>
-        <button class="btn btn-primary" type="submit">Send Enquiry</button>
+        <div class="account-form-actions">
+          <?php if ($whatsappAvailable): ?><label class="enquiry-channel">Send via<select name="channel" data-enquiry-channel><option value="website" <?= $selectedChannel === 'website' ? 'selected' : '' ?>>Email</option><option value="whatsapp" <?= $selectedChannel === 'whatsapp' ? 'selected' : '' ?>>WhatsApp</option></select></label><?php else: ?><input type="hidden" name="channel" value="website"><?php endif; ?>
+          <button class="btn btn-primary" type="submit">Send Enquiry</button>
+        </div>
       </form>
     </div>
 

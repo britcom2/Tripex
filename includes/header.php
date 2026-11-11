@@ -9,6 +9,7 @@ $nav = [
     'services.php' => ['Services', 'services'],
     'gallery.php'  => ['Projects', 'gallery'],
     'about.php'    => ['About', 'about'],
+    'account.php'  => ['Account', 'account.php'],
     'contact.php'  => ['Contact', 'contact'],
 ];
 $logo = setting('logo');
@@ -25,7 +26,7 @@ $quoteCount = is_array($quoteBasket) ? count($quoteBasket) : 0;
 <meta property="og:title" content="<?= e($fullTitle) ?>">
 <meta property="og:description" content="<?= e($desc) ?>">
 <?php if (!empty($ogImage)): ?><meta property="og:image" content="<?= e($ogImage) ?>"><?php endif; ?>
-<link rel="stylesheet" href="<?= e(url('assets/css/style.css')) ?>?v=12">
+<link rel="stylesheet" href="<?= e(url('assets/css/style.css')) ?>?v=14">
 </head>
 <body>
 <div class="topbar">
@@ -45,7 +46,21 @@ $quoteCount = is_array($quoteBasket) ? count($quoteBasket) : 0;
     <button class="nav-toggle" aria-label="Menu" onclick="document.body.classList.toggle('nav-open')"><span></span><span></span><span></span></button>
     <nav class="main-nav">
       <?php foreach ($nav as $file => $n): ?>
-        <a class="<?= $current === $file ? 'active' : '' ?>" href="<?= e($file === 'index.php' ? url() : url($n[1])) ?>"><?= e($n[0]) ?></a>
+        <?php if ($file === 'account.php'): ?>
+          <details class="account-menu">
+            <summary class="account-menu-button <?= $current === $file ? 'active' : '' ?>">Account</summary>
+            <div class="account-menu-popup">
+              <?php if (customer_logged_in()): ?>
+                <a href="<?= e(url('account.php')) ?>">My account</a>
+              <?php else: ?>
+                <a href="<?= e(url('account.php#sign-in')) ?>">Sign in</a>
+                <a href="<?= e(url('account.php#create-account')) ?>">Create account</a>
+              <?php endif; ?>
+            </div>
+          </details>
+        <?php else: ?>
+          <a class="<?= $current === $file ? 'active' : '' ?>" href="<?= e($file === 'index.php' ? url() : url($n[1])) ?>"><?= e($n[0]) ?></a>
+        <?php endif; ?>
       <?php endforeach; ?>
       <a class="btn btn-primary btn-sm" href="<?= e(url('quote')) ?>">Request a Quote<?php if ($quoteCount): ?> <span class="quote-count"><?= $quoteCount ?></span><?php endif; ?></a>
     </nav>

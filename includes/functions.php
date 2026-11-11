@@ -111,11 +111,17 @@ function admin_logged_in(): bool
     return !empty($_SESSION['admin_id']);
 }
 
+function customer_logged_in(): bool
+{
+    return !empty($_SESSION['customer_id']);
+}
+
 function admin_inventory_schema_ready(): bool
 {
     $requiredColumns = [
         'admins' => ['is_active'],
         'products' => ['stock_quantity', 'low_stock_threshold'],
+        'enquiries' => ['customer_id', 'source'],
     ];
     foreach ($requiredColumns as $table => $columns) {
         foreach ($columns as $column) {
@@ -127,10 +133,18 @@ function admin_inventory_schema_ready(): bool
             }
         }
     }
-    return (bool)q(
+    $hasStockAdjustments = (bool)q(
         'SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?',
         ['product_stock_adjustments']
     )->fetchColumn();
+    $hasCustomers = (bool)q(
+        'SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?',
+        ['customers']
+    )->fetchColumn();
+    $hasNullableEnquiryEmail = (bool)q(
+        "SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'enquiries' AND COLUMN_NAME = 'email' AND IS_NULLABLE = 'YES'"
+    )->fetchColumn();
+    return $hasStockAdjustments && $hasCustomers && $hasNullableEnquiryEmail;
 }
 
 function require_admin(bool $requireInventorySchema = true): void
@@ -156,6 +170,15 @@ function require_admin(bool $requireInventorySchema = true): void
 function client_ip(): string
 {
     return substr((string)($_SERVER['REMOTE_ADDR'] ?? ''), 0, 45);
+}
+
+function whatsapp_link(string $phone, string $message = ''): string
+{
+    $number = preg_replace('/\D/', '', $phone);
+    if (strlen($number) < 7) {
+        return '';
+    }
+    return 'https://wa.me/' . $number . ($message !== '' ? '?text=' . rawurlencode($message) : '');
 }
 
 // ---------- Text helpers ----------
@@ -492,15 +515,16 @@ function handle_enquiry(?int $productId = null): array
         return [false, ['Please wait a few seconds before sending another message.']];
     }
     $name    = trim((string)($_POST['name'] ?? ''));
-    $email   = trim((string)($_POST['email'] ?? ''));
     $phone   = trim((string)($_POST['phone'] ?? ''));
     $subject = trim((string)($_POST['subject'] ?? ''));
     $message = trim((string)($_POST['message'] ?? ''));
+    $source  = (($_POST['channel'] ?? '') === 'whatsapp') ? 'whatsapp' : 'website';
+    $email   = $source === 'whatsapp' ? null : trim((string)($_POST['email'] ?? ''));
 
     if ($name === '' || strlen($name) > 120) {
         $errors[] = 'Please enter your name.';
     }
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    if ($source !== 'whatsapp' && (!filter_var($email, FILTER_VALIDATE_EMAIL) || strlen($email) > 160)) {
         $errors[] = 'Please enter a valid email address.';
     }
     if (strlen($message) < 5) {
@@ -512,14 +536,18 @@ function handle_enquiry(?int $productId = null): array
     if ($errors) {
         return [false, $errors];
     }
-    q('INSERT INTO enquiries (product_id, name, email, phone, subject, message, ip) VALUES (?,?,?,?,?,?,?)',
-        [$productId, $name, $email, $phone ?: null, substr($subject, 0, 190) ?: null, $message, client_ip()]);
+    q('INSERT INTO enquiries (product_id, customer_id, name, email, phone, subject, message, source, ip) VALUES (?,?,?,?,?,?,?,?,?)',
+        [$productId, customer_logged_in() ? (int)$_SESSION['customer_id'] : null, $name, $email, $phone ?: null, substr($subject, 0, 190) ?: null, $message, $source, client_ip()]);
     $_SESSION['last_enquiry'] = time();
 
     $to = setting('email');
     if ($to && filter_var($to, FILTER_VALIDATE_EMAIL)) {
-        $body = "New website enquiry\n\nName: $name\nEmail: $email\nPhone: $phone\nSubject: $subject\n\n$message\n";
-        $headers = 'From: ' . $to . "\r\nReply-To: " . str_replace(["\r", "\n"], '', $email) . "\r\nContent-Type: text/plain; charset=UTF-8";
+        $body = "New website enquiry\n\nName: $name\n"
+            . ($email !== null ? "Email: $email\n" : '')
+            . "Phone: $phone\nSubject: $subject\n\n$message\n";
+        $headers = 'From: ' . $to . "\r\n"
+            . ($email !== null ? 'Reply-To: ' . str_replace(["\r", "\n"], '', $email) . "\r\n" : '')
+            . 'Content-Type: text/plain; charset=UTF-8';
         @mail($to, 'Website enquiry: ' . str_replace(["\r", "\n"], ' ', $subject ?: $name), $body, $headers);
     }
     return [true, []];
