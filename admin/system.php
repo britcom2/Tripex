@@ -11,6 +11,11 @@ $schemaReady = admin_inventory_schema_ready();
 $uploadsReady = is_dir($uploadsPath) && is_writable($uploadsPath);
 $gdAvailable = extension_loaded('gd');
 $mailAvailable = function_exists('mail');
+$adminFiles = ['system.php', 'login.php', 'upgrade.php'];
+$missingAdminFiles = array_values(array_filter($adminFiles, static function (string $file): bool {
+    return !is_file(__DIR__ . '/' . $file) || !is_readable(__DIR__ . '/' . $file);
+}));
+$adminFilesReady = $missingAdminFiles === [];
 $release = null;
 $releaseFile = ROOT . '/deployment.json';
 if (is_readable($releaseFile)) {
@@ -44,6 +49,13 @@ $checks = [
       'detail' => $release
         ? substr($release['commit'], 0, 12) . ' · ' . gmdate('d M Y, H:i', strtotime($release['deployed_at'])) . ' UTC'
         : 'No release marker found. Push to main and confirm the GitHub Actions deployment succeeds.',
+    ],
+    [
+        'name' => 'Admin files',
+        'ok' => $adminFilesReady,
+        'detail' => $adminFilesReady
+            ? 'System status, login and database upgrade files are present'
+            : 'Missing or unreadable: ' . implode(', ', $missingAdminFiles) . '. Check the Truehost deployment target and subdomain document root.',
     ],
     [
         'name' => 'Uploads directory',
@@ -87,6 +99,7 @@ include __DIR__ . '/_header.php';
 <section class="panel">
   <h2>Truehost hosting readiness</h2>
   <p class="muted">Use this checklist to diagnose common cPanel hosting and deployment issues. Upload limits currently read: <?= e(ini_get('upload_max_filesize')) ?> per file and <?= e(ini_get('post_max_size')) ?> per request.</p>
+  <div class="alert alert-info"><strong>Getting a 404 for an admin page?</strong> Confirm the subdomain document root matches the directory configured in the GitHub Actions Truehost FTP deployment. Then check that the requested PHP file exists in that server directory. A database schema upgrade will not fix a missing-file 404; use the Database schema check below after the admin page loads.</div>
   <div class="panel nopad">
     <table class="tbl">
       <thead><tr><th>Check</th><th>Status</th><th>Details</th></tr></thead>
