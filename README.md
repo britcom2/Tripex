@@ -1,89 +1,55 @@
-# Tripex Carpets – Website & Admin Panel
+# Tripex Carpets
 
-Plain PHP + MySQL (no frameworks, no build step), made for cPanel shared hosting such as Truehost.
-Requires PHP 7.4 or newer with PDO MySQL and GD (both standard on Truehost).
+Tripex Carpets is a product-catalogue and enquiry website for a carpet and flooring business. It gives customers a simple way to explore products, learn about the company and its services, and get in touch, while providing staff with an admin panel to manage the catalogue, inventory, content and enquiries.
 
-## Deploy on Truehost (cPanel)
+The project is built with PHP and MySQL, without a PHP framework or a frontend build step.
 
-1. **Create the database**
-   cPanel → *MySQL® Databases* → create a database, create a user with a strong password, and add the user to the database with **All Privileges**.
-   Note the full names (cPanel adds a prefix, e.g. `myacct_tripex`).
+## What the website offers
 
-2. **Upload the files**
-   cPanel → *File Manager* → open `public_html` (or the folder of your domain/subdomain, e.g. `tripex.yourdomain.com`).
-   Upload `tripex-site.zip` and **Extract** it so that `index.php`, `admin/`, `includes/` etc. sit directly inside that folder.
-   Make sure hidden files (`.htaccess`) were extracted (File Manager → Settings → *Show Hidden Files*).
+- **Product catalogue:** Browse products by category, search by product name or SKU, and sort by newest, name or price.
+- **Product details:** View descriptions, specifications, images, availability and pricing information.
+- **Quote-based sales:** Products can display a price, an offer price, or “Request a quote” when a price is not listed. The site supports enquiries rather than an online checkout.
+- **Company information:** Public pages for the home page, about, services, gallery and contact details.
+- **Enquiries and contact:** Customers can submit website enquiries or continue a conversation through WhatsApp. Enquiries are stored for staff to follow up.
+- **Customer accounts:** Customers can register, sign in, submit enquiries and review their enquiry history.
+- **Responsive experience:** The storefront adapts to mobile screens and includes mobile-friendly product galleries and quick contact actions.
 
-3. **Run the installer**
-   Open `https://yourdomain.com/install.php`, enter the database details, company name and the admin username/password, then click **Install**.
+## Admin panel
 
-4. **Delete `install.php`** from the server when it finishes.
+The `/admin/` area provides tools for managing the site:
 
-If `config.php` is already present but the configured database has no admin account, the installer offers a one-time form to create the first admin without reinstalling the site. Once any admin exists, the installer blocks account creation; sign in at `/admin/` instead.
+- **Dashboard:** View product and category totals, recent enquiries, popular products and low-stock alerts.
+- **Products:** Create and edit listings, manage product images, descriptions, specifications, pricing, offers, availability, visibility and featured status. Prices can also be updated from the product list.
+- **Bulk product import:** Download a CSV template and import multiple products, with row-level feedback for skipped or invalid entries.
+- **Inventory:** Track stock quantities and alert thresholds, record stock adjustments with a reason, and review adjustment history.
+- **Categories:** Organize products and control category images and display order.
+- **Gallery:** Manage project photos and captions.
+- **Enquiries:** Review incoming messages, identify their channel, and follow up by email or WhatsApp.
+- **Staff accounts:** Create and manage administrator accounts.
+- **Site settings:** Update company contact information, branding, homepage content, social links and map details.
+- **Account and system tools:** Update an administrator's credentials and check site readiness. Existing installations can use the admin database-upgrade flow when an update requires it.
 
-5. **Log in** at `https://yourdomain.com/admin/` and fill in *Site Settings* (phone, email, address, WhatsApp, hero image, logo, map).
+## Project characteristics
 
-6. **PHP version**: cPanel → *Select PHP Version* → choose 8.1 or 8.2 and make sure `pdo_mysql`, `gd`, `mbstring`, `fileinfo` are ticked.
+- Server-rendered PHP pages backed by MySQL.
+- No framework or frontend compilation step.
+- Product and gallery images are managed through the admin panel; responsive image variants are generated when supported by the server.
+- Enquiry notifications use PHP's email functionality, while submitted enquiries are also retained in the admin panel.
+- Includes protections such as prepared database queries, CSRF tokens, password hashing, login rate limiting and image-upload validation.
 
-7. **HTTPS**: once the free SSL (AutoSSL) is active, open `.htaccess` and remove the `#` in front of the three "Force HTTPS" lines.
+## Main areas of the codebase
 
-If the installer cannot write `config.php`, copy `config.sample.php` to `config.php`, fill it in, and import `database/schema.sql` through phpMyAdmin, then create your admin user via the installer or phpMyAdmin.
-
-## GitHub Actions deployment to Truehost
-
-The workflow at `.github/workflows/deploy-truehost.yml` deploys each push to `main` over FTPS. In the GitHub repository, open **Settings → Secrets and variables → Actions** and add these repository secrets:
-
-| Secret | Value |
+| Path | Purpose |
 |---|---|
-| `TRUEHOST_FTP_SERVER` | FTP server hostname from Truehost/cPanel (not necessarily the website hostname) |
-| `TRUEHOST_FTP_USERNAME` | FTP account username |
-| `TRUEHOST_FTP_PASSWORD` | FTP account password |
-| `TRUEHOST_FTP_SERVER_DIR` | Destination directory relative to the FTP account home. The current expected value is `tripex.splentainsights.com/`; verify the correct path in cPanel and keep the trailing slash. |
-| `TRUEHOST_FTP_PORT` | FTPS port from Truehost. Common explicit FTPS port is `21`; confirm with the provider. |
-| `TRUEHOST_FTP_PROTOCOL` | `ftps` for explicit FTPS; use only the protocol confirmed by Truehost. |
+| `index.php`, `products.php`, `product.php` | Homepage and product catalogue |
+| `about.php`, `services.php`, `gallery.php`, `contact.php` | Company and contact pages |
+| `account.php`, `quote.php` | Customer accounts and quote/enquiry flow |
+| `admin/` | Administration and content management |
+| `includes/` | Shared application bootstrap, helpers and page layout |
+| `assets/` | Stylesheets and static assets |
+| `uploads/` | Images managed through the site |
+| `database/` | Database schema |
 
-The workflow deliberately does not upload `config.php`, `install.php`, or `uploads/`, and does not clear the destination before deployment. Configure the development site's `config.php`, database, and writable uploads directory on the server separately. Remove any existing installer from the server after setup. Never add hosting credentials or `config.php` to Git.
+## Technical installation
 
-## Admin panel (`/admin/`)
-
-| Section | What you can do |
-|---|---|
-| Dashboard | Counts, latest enquiries, most viewed products |
-| System status | Truehost readiness checks for PHP, database schema, uploads, HTTPS, installer cleanup and email support |
-| Products | Add / edit / delete, multiple images (choose the main one), price, offer price, unit, stock status, low-stock threshold, specs, visible & featured toggles, **quick price edit in the list**, and CSV import |
-| Stock control | Record signed stock movements with a required reason, review the adjustment history, and filter products below their alert thresholds |
-| Staff accounts | Create admin accounts, reset passwords, disable/reactivate accounts, and delete disabled accounts. All staff accounts currently have full admin access. |
-| Categories | Add / edit / delete with image and display order |
-| Gallery | Upload project photos with captions |
-| Enquiries | Read, reply by email or WhatsApp, identify the submission channel, delete (also emailed to the address in settings) |
-| Site Settings | Company details, hero text & image, logo, about text, social links, Google Map |
-| My Account | Change username / password |
-
-Leave a product's price empty to show **"Request a quote"** instead of a price.
-
-To bulk add products, open **Admin → Products**, download the CSV template, fill it in and upload it. The importer accepts category names or slugs, leaves empty prices as quote-only, and skips invalid rows with line-by-line feedback. CSV files are limited to 5 MB. Products with a duplicate slug are skipped.
-
-Customers can create an account at `/account.php` to send and track enquiries. Website and WhatsApp enquiries appear in **Admin → Enquiries**; WhatsApp enquiries are saved before the customer is taken to the prefilled chat, and admins can open a prefilled WhatsApp reply from an enquiry. Customers can also add products from the catalogue to a quote list and submit a project request at `/quote`. The request captures optional quantities, site type and location, timeline, installation preference and project notes. The homepage features an automatically rotating, keyboard-accessible project slideshow. On mobile, a fixed bottom dock provides Home, Products, Projects, Call, WhatsApp and Quote shortcuts (contact shortcuts appear when configured).
-
-On existing installations, deploy the update and sign in to the admin panel; the site will direct an administrator to the one-time **Database upgrade** page. Run it before using customer accounts, enquiry channels, staff accounts or stock control. Existing product stock counts remain untracked until you record opening quantities in **Admin → Stock control**. New installations include the updated schema automatically.
-
-## Notes
-
-- Images are resized on upload and responsive 480/960/1280 px variants are generated when the source dimensions allow (JPG/PNG/WEBP, 6 MB each; GD recommended). If an upload fails, check the PHP limits `upload_max_filesize` / `post_max_size` in *Select PHP Version → Options*.
-- Storefront images use responsive source sets, mobile product galleries support swipe, and mobile visitors get a bottom navigation dock with quick contact and quote actions. Static assets and uploaded images use long-lived cache headers; CSS uses a versioned URL when updated. Apache `mod_deflate` enables response compression, while `mod_headers` applies the long-lived cache policy.
-- The storefront uses system and serif font stacks so it renders immediately without waiting for external font services.
-- Enquiry emails use PHP `mail()`. If they don't arrive, create a mailbox in cPanel (e.g. `info@yourdomain.com`) and use it as the Email in Site Settings. Enquiries are always saved in the admin panel regardless.
-- Back up regularly: the database (phpMyAdmin → Export) and the `uploads/` folder.
-- Security built in: prepared SQL statements, CSRF tokens on every form, hashed passwords, login rate-limiting, upload validation, PHP execution blocked in `uploads/` by the root `.htaccess` (and `uploads/.htaccess` for manual deployments), `includes/` and `database/` protected.
-
-## Structure
-
-```
-index.php products.php product.php services.php gallery.php about.php contact.php   public pages
-admin/        admin panel
-includes/     bootstrap, helpers, header/footer
-assets/       css, placeholder image
-uploads/      images uploaded from the admin
-database/     schema.sql
-install.php   one-time installer (delete after use)
-```
+Technical installation, configuration and deployment instructions will be documented separately.
