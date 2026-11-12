@@ -501,12 +501,12 @@ function product_card(array $p): string
         $badge = '<span class="badge badge-out">Out of stock</span>';
     }
     return '<article class="card product-card">
-        <a class="card-img" href="' . e(product_url($p['slug'])) . '">' . $badge . '<img loading="lazy" decoding="async" src="' . e(img_url($p['image'])) . '"' . img_srcset_attr($p['image'], '(max-width: 600px) 48vw, (max-width: 1000px) 45vw, 25vw') . ' alt="' . e($p['name']) . '"></a>
+        <a class="card-img" href="' . e(product_url($p['slug'])) . '">' . $badge . '<img loading="lazy" decoding="async" src="' . e(img_url($p['image'])) . '"' . img_srcset_attr($p['image'], '(max-width: 700px) 92vw, 52vw') . ' alt="' . e($p['name']) . '"></a>
         <div class="card-body">
             <span class="cat">' . e($p['cat_name'] ?? 'Flooring') . '</span>
             <h3><a href="' . e(product_url($p['slug'])) . '">' . e($p['name']) . '</a></h3>
             <p>' . e(excerpt((string)($p['short_description'] ?: $p['description']), 90)) . '</p>
-            <div class="card-foot">' . price_html($p) . '<div class="card-actions"><a class="link-arrow" href="' . e(product_url($p['slug'])) . '">Details &rarr;</a><form method="post" action="' . e(url('quote.php')) . '" class="card-quote-form">' . csrf_field() . '<input type="hidden" name="action" value="add"><input type="hidden" name="product_id" value="' . (int)$p['id'] . '"><button type="submit">Add to quote</button></form></div></div>
+            <div class="card-foot">' . price_html($p) . '<div class="card-actions"><a class="link-arrow" href="' . e(product_url($p['slug'])) . '">Details &rarr;</a><form method="post" action="' . e(url('quote.php')) . '">' . csrf_field() . '<input type="hidden" name="action" value="add"><input type="hidden" name="product_id" value="' . (int)$p['id'] . '"><button class="btn btn-outline" type="submit">Add to quote</button></form></div></div>
         </div></article>';
 }
 
@@ -533,6 +533,14 @@ function handle_enquiry(?int $productId = null): array
     $source  = (($_POST['channel'] ?? '') === 'whatsapp') ? 'whatsapp' : 'website';
     $email   = $source === 'whatsapp' ? null : trim((string)($_POST['email'] ?? ''));
 
+    $normalizedPhone = preg_replace('/[\s().-]/', '', $phone);
+    $phoneIsValid = preg_match('/^\+[1-9]\d{6,14}$/', $normalizedPhone) === 1;
+    if ($phone !== '' && !$phoneIsValid) {
+        $errors[] = 'Include a valid country calling code with your phone number, for example +254 7XX XXX XXX.';
+    }
+    if ($source === 'whatsapp' && !$phoneIsValid) {
+        $errors[] = 'Enter a valid phone or WhatsApp number including its country code.';
+    }
     if ($name === '' || strlen($name) > 120) {
         $errors[] = 'Please enter your name.';
     }
