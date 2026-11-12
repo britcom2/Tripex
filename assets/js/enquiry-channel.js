@@ -21,10 +21,28 @@ document.querySelectorAll('form[data-enquiry-form]').forEach((form) => {
 
   const updatePhoneFormat = () => {
     if (!phoneInput) return;
+    const channel = form.querySelector('[data-enquiry-channel]:checked')
+      || form.querySelector('input[name="channel"][type="hidden"]');
+    const isWhatsApp = channel?.value === 'whatsapp';
+
+    if (!isWhatsApp) {
+      phoneInput.placeholder = 'Optional phone number';
+      phoneInput.setAttribute('aria-describedby', '');
+      if (phoneHelp) {
+        phoneHelp.textContent = '';
+        phoneHelp.hidden = true;
+      }
+      if (phoneInput.value === defaultCountryCode) {
+        phoneInput.value = '';
+      }
+      return;
+    }
+
     phoneInput.placeholder = `${defaultCountryCode} 7XX XXX XXX`;
     phoneInput.setAttribute('aria-describedby', 'enquiry-phone-help');
     if (phoneHelp) {
       phoneHelp.textContent = 'Format: +254 7XX XXX XXX.';
+      phoneHelp.hidden = false;
     }
 
     const formatted = normalizeKenyaPhone(phoneInput.value);
@@ -85,11 +103,16 @@ document.querySelectorAll('form[data-enquiry-form]').forEach((form) => {
 
   form.addEventListener('submit', () => {
     if (!submitButton || submitButton.disabled) return;
-    if (phoneInput) {
+    const channel = form.querySelector('[data-enquiry-channel]:checked')
+      || form.querySelector('input[name="channel"][type="hidden"]');
+    const isWhatsApp = channel?.value === 'whatsapp';
+
+    if (phoneInput && isWhatsApp) {
       const formatted = normalizeKenyaPhone(phoneInput.value);
       if (formatted) phoneInput.value = formatted;
       if (!formatted) phoneInput.value = defaultCountryCode;
     }
+
     submitButton.setAttribute('aria-busy', 'true');
     if (submitLabel) submitLabel.textContent = 'Preparing your enquiry...';
   });
