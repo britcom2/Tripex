@@ -8,42 +8,34 @@ document.querySelectorAll('form[data-enquiry-form]').forEach((form) => {
   const channelNote = form.querySelector('[data-channel-note]');
   const submitButton = form.querySelector('[data-enquiry-submit]');
   const submitLabel = submitButton?.querySelector('[data-submit-label]');
-  let countryCodeInput;
+  const defaultCountryCode = '+254';
 
-  if (phoneInput) {
-    const countryCodeLabel = document.createElement('label');
-    countryCodeLabel.className = 'phone-country-code-field';
-    countryCodeLabel.append(document.createTextNode('Country code '));
+  const normalizeKenyaPhone = (value) => {
+    const trimmed = (value ?? '').trim();
+    if (!trimmed) return '';
+    const digits = trimmed.replace(/\D/g, '');
+    if (!digits) return '';
+    const local = digits.startsWith('254') ? digits.slice(3) : digits.replace(/^0+/, '');
+    return `+254${local}`;
+  };
 
-    countryCodeInput = document.createElement('input');
-    countryCodeInput.type = 'tel';
-    countryCodeInput.inputMode = 'tel';
-    countryCodeInput.autocomplete = 'tel-country-code';
-    countryCodeInput.value = '+254';
-    countryCodeInput.maxLength = 5;
-    countryCodeInput.pattern = '\\+[1-9][0-9]{0,3}';
-    countryCodeInput.setAttribute('aria-label', 'Country calling code');
-    countryCodeInput.setAttribute('aria-describedby', 'enquiry-phone-format');
-    countryCodeInput.dataset.countryCode = '';
-    countryCodeLabel.append(countryCodeInput);
-    phoneInput.closest('[data-phone-field]').before(countryCodeLabel);
-
-    const formatHelp = document.createElement('small');
-    formatHelp.className = 'field-help';
-    formatHelp.id = 'enquiry-phone-format';
-    formatHelp.textContent = 'Kenya is selected by default (+254). Format: +254 7XX XXX XXX.';
-    countryCodeLabel.append(formatHelp);
-
-    const phoneLabel = phoneInput.closest('[data-phone-field]');
-    phoneLabel.insertBefore(formatHelp.cloneNode(true), phoneInput.nextSibling);
-
-    // Values returned after a validation error may already contain the country code.
-    const currentDigits = phoneInput.value.replace(/\D/g, '');
-    const defaultCodeDigits = '254';
-    if (currentDigits.startsWith(defaultCodeDigits)) {
-      phoneInput.value = currentDigits.slice(defaultCodeDigits.length);
+  const updatePhoneFormat = () => {
+    if (!phoneInput) return;
+    phoneInput.placeholder = `${defaultCountryCode} 7XX XXX XXX`;
+    phoneInput.setAttribute('aria-describedby', 'enquiry-phone-help');
+    if (phoneHelp) {
+      phoneHelp.textContent = 'Format: +254 7XX XXX XXX.';
     }
-  }
+
+    const formatted = normalizeKenyaPhone(phoneInput.value);
+    if (formatted && formatted !== phoneInput.value) {
+      phoneInput.value = formatted;
+    }
+
+    if (!phoneInput.value.trim()) {
+      phoneInput.value = defaultCountryCode;
+    }
+  };
 
   const updateChannel = () => {
     const channel = form.querySelector('[data-enquiry-channel]:checked')
@@ -58,22 +50,17 @@ document.querySelectorAll('form[data-enquiry-form]').forEach((form) => {
     }
 
     if (phoneInput) {
+      updatePhoneFormat();
+      const number = normalizeKenyaPhone(phoneInput.value);
+      const isValidKenyaPhone = /^\+254\d{9,10}$/.test(number || '');
       phoneInput.required = isWhatsApp;
       phoneInput.setCustomValidity(
-        isWhatsApp && phoneInput.value.replace(/\D/g, '').length < 7
-          ? 'Enter a valid phone or WhatsApp number with at least 7 digits.'
+        isWhatsApp && !isValidKenyaPhone
+          ? 'Enter a valid Kenya phone number in the format +254 7XX XXX XXX.'
           : ''
       );
       if (phoneRequired) phoneRequired.hidden = !isWhatsApp;
       if (phoneHelp) phoneHelp.hidden = !isWhatsApp;
-      if (countryCodeInput) {
-        countryCodeInput.required = isWhatsApp || phoneInput.value.trim() !== '';
-        countryCodeInput.setCustomValidity(
-          countryCodeInput.value && !/^\+[1-9]\d{0,3}$/.test(countryCodeInput.value.trim())
-            ? 'Enter a country calling code, for example +254.'
-            : ''
-        );
-      }
     }
 
     if (channelNote) {
@@ -93,19 +80,15 @@ document.querySelectorAll('form[data-enquiry-form]').forEach((form) => {
   };
 
   channels.forEach((channel) => channel.addEventListener('change', updateChannel));
-  phoneInput?.addEventListener('input', updateChannel);
-  countryCodeInput?.addEventListener('input', updateChannel);
+  phoneInput?.addEventListener('input', updatePhoneFormat);
   updateChannel();
 
   form.addEventListener('submit', () => {
     if (!submitButton || submitButton.disabled) return;
-    if (phoneInput && countryCodeInput && phoneInput.value.trim() !== '') {
-      const code = countryCodeInput.value.trim();
-      let localDigits = phoneInput.value.replace(/\D/g, '');
-      const codeDigits = code.replace(/\D/g, '');
-      if (localDigits.startsWith(codeDigits)) localDigits = localDigits.slice(codeDigits.length);
-      if (localDigits.startsWith('0')) localDigits = localDigits.slice(1);
-      phoneInput.value = `${code}${localDigits}`;
+    if (phoneInput) {
+      const formatted = normalizeKenyaPhone(phoneInput.value);
+      if (formatted) phoneInput.value = formatted;
+      if (!formatted) phoneInput.value = defaultCountryCode;
     }
     submitButton.setAttribute('aria-busy', 'true');
     if (submitLabel) submitLabel.textContent = 'Preparing your enquiry...';
