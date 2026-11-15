@@ -55,7 +55,7 @@ $map = setting('map_embed');
     <div>
       <?= flash_render() ?>
       <?php if ($product): ?><div class="alert alert-success">Enquiring about: <strong><?= e($product['name']) ?></strong></div><?php endif; ?>
-      <div class="enquiry-page-intro"><span class="about-kicker">A considered start</span><h2>Let’s find the right surface for your space.</h2><p>Share a few details and our flooring team will help you take the next step.</p><a href="<?= e(url('quote')) ?>">Planning a project? Build a detailed quote request <span aria-hidden="true">&rarr;</span></a></div>
+      <div class="enquiry-page-intro"><span class="about-kicker">A considered start</span><h2>Let’s find the right surface for your space.</h2><p>Share a few details and our flooring team will help you choose the right finish, quantity and timeline.</p></div>
       <?php foreach ($errors as $er): ?><div class="alert alert-error" role="alert" tabindex="-1"><?= e($er) ?></div><?php endforeach; ?>
       <form method="post" class="form enquiry-form contact-enquiry-form" data-enquiry-form>
         <?= csrf_field() ?>
@@ -65,7 +65,7 @@ $map = setting('map_embed');
         <div class="row enquiry-fields">
           <label>Your name <span class="required-mark">*</span><input name="name" autocomplete="name" maxlength="120" required value="<?= e($_POST['name'] ?? '') ?>" placeholder="e.g. Alex"></label>
           <label data-enquiry-email-field <?= $selectedChannel === 'whatsapp' ? 'hidden' : '' ?>>Email address <span class="required-mark">*</span><input type="email" name="email" autocomplete="email" maxlength="160" value="<?= e($_POST['email'] ?? '') ?>" placeholder="you@example.com"></label>
-          <label data-phone-field>Phone / WhatsApp <span data-phone-required class="required-mark" <?= $selectedChannel !== 'whatsapp' ? 'hidden' : '' ?>>*</span><input name="phone" autocomplete="tel" maxlength="40" value="<?= e($_POST['phone'] ?? '') ?>" placeholder="Include your country code" aria-describedby="enquiry-phone-help"><small class="field-help" id="enquiry-phone-help" data-phone-help <?= $selectedChannel !== 'whatsapp' ? 'hidden' : '' ?>>Use at least 7 digits; include your country code if possible.</small></label>
+          <label data-phone-field>Phone / WhatsApp <span data-phone-required class="required-mark" <?= $selectedChannel !== 'whatsapp' ? 'hidden' : '' ?>>*</span><input name="phone" autocomplete="tel" maxlength="40" value="<?= e($_POST['phone'] ?? '') ?>" placeholder="+254 7XX XXX XXX" aria-describedby="enquiry-phone-help"><small class="field-help" id="enquiry-phone-help" data-phone-help <?= $selectedChannel !== 'whatsapp' ? 'hidden' : '' ?>>Format: +254 7XX XXX XXX.</small></label>
           <label>Subject <span class="optional-mark">Optional</span><input name="subject" maxlength="190" value="<?= e($_POST['subject'] ?? ($product ? 'Enquiry: ' . $product['name'] : '')) ?>" placeholder="What can we help with?"></label>
         </div>
         <label class="enquiry-message-field">Your message <span class="required-mark">*</span><textarea name="message" rows="5" maxlength="5000" required placeholder="Tell us about the room, product or project you have in mind..."><?= e($_POST['message'] ?? '') ?></textarea></label>
@@ -88,9 +88,9 @@ $map = setting('map_embed');
             </div>
           </fieldset>
         <?php else: ?><input type="hidden" name="channel" value="website"><?php endif; ?>
-        <p class="enquiry-channel-note" id="enquiry-channel-note" data-channel-note data-email-note="We’ll use your email address to reply to this enquiry." data-whatsapp-note="Add your WhatsApp number above. Your enquiry will be ready to send in WhatsApp." aria-live="polite"><?= $selectedChannel === 'whatsapp' ? 'Add your WhatsApp number above. Your enquiry will be ready to send in WhatsApp.' : 'We’ll use your email address to reply to this enquiry.' ?></p>
+        <p class="enquiry-channel-note" id="enquiry-channel-note" data-channel-note data-email-note="We’ll use your email address to reply to this enquiry." data-whatsapp-note="Add your WhatsApp number in the Kenya format (+254 7XX XXX XXX).">We’ll use your email address to reply to this enquiry.</p>
         <div class="enquiry-submit-row">
-          <button class="btn btn-primary enquiry-submit" type="submit" data-enquiry-submit data-email-label="Send enquiry" data-whatsapp-label="Continue to WhatsApp"><span data-submit-label><?= $selectedChannel === 'whatsapp' ? 'Continue to WhatsApp' : 'Send enquiry' ?></span><span aria-hidden="true">&rarr;</span></button>
+          <button class="btn btn-primary enquiry-submit" type="submit" data-enquiry-submit data-email-label="Send enquiry" data-whatsapp-label="Continue to WhatsApp"><span data-submit-label><?= $selectedChannel === 'whatsapp' ? 'Continue to WhatsApp' : 'Send enquiry' ?></span></button>
           <span class="enquiry-submit-note"><span aria-hidden="true">&#128274;</span> Your details are only used to respond to you.</span>
         </div>
       </form>
