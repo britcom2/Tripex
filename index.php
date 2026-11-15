@@ -31,6 +31,13 @@ $photoAt = static function (int $index) use ($photos): string {
 $photoTitle = static function (int $index, string $fallback) use ($photos): string {
     return !empty($photos[$index]['title']) ? $photos[$index]['title'] : $fallback;
 };
+$tiktokVideos = [];
+foreach (preg_split('/\r\n|\r|\n/', setting('tiktok_videos')) as $videoUrl) {
+    $videoId = tiktok_video_id($videoUrl);
+    if ($videoId !== null) {
+        $tiktokVideos[] = ['url' => $videoUrl, 'id' => $videoId];
+    }
+}
 $heroSlides = [
     [
         'image' => $heroPhoto ? img_url($heroPhoto) : $photoAt(0),
@@ -208,6 +215,24 @@ include __DIR__ . '/includes/header.php';
     </div>
   </div>
 </section>
+
+<?php if ($tiktokVideos): ?>
+<section class="section home-tiktok" aria-labelledby="home-tiktok-title">
+  <div class="container">
+    <div class="home-section-heading">
+      <div><span class="home-kicker">Follow along</span><h2 id="home-tiktok-title">Tripex on TikTok.</h2><p>See materials, spaces and project details in motion.</p></div>
+      <?php if (setting('tiktok')): ?><a class="home-text-link" href="<?= e(setting('tiktok')) ?>" target="_blank" rel="noopener noreferrer">Visit our TikTok <span aria-hidden="true">&rarr;</span></a><?php endif; ?>
+    </div>
+    <div class="home-tiktok-grid">
+      <?php foreach ($tiktokVideos as $index => $video): ?>
+        <div class="home-tiktok-video">
+          <iframe src="https://www.tiktok.com/player/v1/<?= e($video['id']) ?>" title="Tripex TikTok video <?= $index + 1 ?>" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="fullscreen; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+        </div>
+      <?php endforeach; ?>
+    </div>
+  </div>
+</section>
+<?php endif; ?>
 
 <section class="home-purpose">
   <div class="container home-purpose-grid">

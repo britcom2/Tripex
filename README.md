@@ -26,7 +26,7 @@ The `/admin/` area provides tools for managing the site:
 - Gallery: manage project photos and captions.
 - Enquiries: review incoming messages, identify their channel, and follow up by email or WhatsApp.
 - Staff accounts: create and manage administrator accounts.
-- Site settings: update contact information, branding, homepage content, social links and map details.
+- Site settings: update contact information, branding, homepage content, social links and map details. Facebook, Instagram, TikTok, YouTube, LinkedIn and X profile links are supported; up to three public TikTok video links can be embedded on the homepage.
 - Account and system tools: update an administrator’s credentials and check site readiness.
 
 ## Project characteristics
@@ -135,7 +135,7 @@ After creating the configuration file, import `database/schema.sql` using your d
 
 ### 5. Complete site setup
 
-Sign in at `https://example.com/admin/` (adjust the URL if installed in a subdirectory). In Site Settings, add the company name, phone, email, address, WhatsApp number, logo, hero image, social links and map details. Then add or import product listings and check the dashboard for enquiries and stock alerts.
+Sign in at `https://example.com/admin/` (adjust the URL if installed in a subdirectory). In Site Settings, add the company name, phone, email, address, WhatsApp number, logo, hero image, social profile URLs and map details. To show TikTok previews, add up to three full public video URLs, one per line. Embedded videos are loaded from TikTok when visitors view the homepage. Then add or import product listings and check the dashboard for enquiries and stock alerts.
 
 ### 6. Secure the installation
 

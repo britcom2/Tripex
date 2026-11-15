@@ -1,7 +1,8 @@
 <?php
 $current = basename($_SERVER['SCRIPT_NAME']);
 $siteName = setting('site_name', 'Tripex Carpets');
-$fullTitle = isset($pageTitle) && $pageTitle ? $pageTitle . ' | ' . $siteName : $siteName . ' - ' . setting('tagline', 'Premium Flooring & Carpet Solutions');
+$tagline = setting('tagline', 'Premium Flooring & Carpet Solutions');
+$fullTitle = isset($pageTitle) && $pageTitle ? $pageTitle . ' | ' . $siteName : $siteName . ' - ' . $tagline;
 $desc = isset($metaDesc) && $metaDesc ? $metaDesc : setting('meta_description', 'Premium carpets, carpet tiles, vinyl planks and architectural flooring surfaces in Kenya.');
 $nav = [
     'index.php'    => ['Home', 'index.php'],
@@ -26,7 +27,7 @@ $quoteCount = is_array($quoteBasket) ? count($quoteBasket) : 0;
 <meta property="og:title" content="<?= e($fullTitle) ?>">
 <meta property="og:description" content="<?= e($desc) ?>">
 <?php if (!empty($ogImage)): ?><meta property="og:image" content="<?= e($ogImage) ?>"><?php endif; ?>
-<link rel="stylesheet" href="<?= e(url('assets/css/style.css')) ?>?v=17">
+<link rel="stylesheet" href="<?= e(url('assets/css/style.css')) ?>?v=21">
 </head>
 <body>
 <div class="topbar">
@@ -40,9 +41,14 @@ $quoteCount = is_array($quoteBasket) ? count($quoteBasket) : 0;
 </div>
 <header class="site-header">
   <div class="container header-inner">
-    <a class="brand" href="<?= e(url()) ?>">
-      <?php if ($logo): ?><img src="<?= e(img_url($logo)) ?>"<?= img_srcset_attr($logo, '180px') ?> alt="<?= e($siteName) ?>"><?php else: ?><span class="brand-mark">T</span><span class="brand-text"><?= e($siteName) ?></span><?php endif; ?>
+    <a class="brand" href="<?= e(url()) ?>" aria-label="<?= e($siteName) ?>">
+      <?php if ($logo): ?><img src="<?= e(img_url($logo)) ?>"<?= img_srcset_attr($logo, '180px') ?> alt=""><?php else: ?><span class="brand-mark" aria-hidden="true">T</span><?php endif; ?>
+      <span class="brand-copy<?= $logo ? ' brand-copy-mobile' : '' ?>">
+        <span class="brand-text"><?= e($siteName) ?></span>
+        <small class="brand-tagline"><?= e($tagline) ?></small>
+      </span>
     </a>
+    <?php if (setting('phone')): ?><a class="mobile-header-call" href="tel:<?= e(preg_replace('/[^\d+]/', '', setting('phone'))) ?>" aria-label="Call <?= e(setting('phone')) ?>"><span aria-hidden="true">&#9742;</span><span>Call</span></a><?php endif; ?>
     <button class="nav-toggle" aria-label="Menu" onclick="document.body.classList.toggle('nav-open')"><span></span><span></span><span></span></button>
     <nav class="main-nav">
       <?php foreach ($nav as $file => $n): ?>

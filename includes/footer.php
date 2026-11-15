@@ -7,6 +7,14 @@ try {
 } catch (Throwable $ex) {
 }
 $wa = whatsapp_link(setting('whatsapp'));
+$socialLinks = [
+    'Facebook' => setting('facebook'),
+    'Instagram' => setting('instagram'),
+    'TikTok' => setting('tiktok'),
+    'YouTube' => setting('youtube'),
+    'LinkedIn' => setting('linkedin'),
+    'X' => setting('x'),
+];
 ?>
 <footer class="site-footer">
   <div class="container footer-grid">
@@ -14,8 +22,9 @@ $wa = whatsapp_link(setting('whatsapp'));
       <h4><?= e($siteName) ?></h4>
       <p><?= e(setting('footer_text', 'Premium flooring, carpet tiles, vinyl planks and architectural surfaces for homes, offices and commercial spaces.')) ?></p>
       <div class="social">
-        <?php if (setting('facebook')): ?><a href="<?= e(setting('facebook')) ?>" target="_blank" rel="noopener">Facebook</a><?php endif; ?>
-        <?php if (setting('instagram')): ?><a href="<?= e(setting('instagram')) ?>" target="_blank" rel="noopener">Instagram</a><?php endif; ?>
+        <?php foreach ($socialLinks as $label => $href): ?>
+          <?php if ($href): ?><a href="<?= e($href) ?>" target="_blank" rel="noopener noreferrer"><?= e($label) ?></a><?php endif; ?>
+        <?php endforeach; ?>
       </div>
     </div>
     <div>

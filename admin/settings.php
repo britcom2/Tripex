@@ -4,19 +4,71 @@ require_admin();
 
 $textKeys = ['site_name', 'tagline', 'phone', 'email', 'whatsapp', 'address', 'hours', 'currency',
              'hero_title', 'hero_subtitle', 'about_text', 'footer_text', 'meta_description',
-             'facebook', 'instagram', 'map_embed'];
+             'facebook', 'instagram', 'tiktok', 'youtube', 'linkedin', 'x', 'map_embed'];
+$socialHosts = [
+    'facebook' => ['facebook.com', 'fb.com'],
+    'instagram' => ['instagram.com'],
+    'tiktok' => ['tiktok.com'],
+    'youtube' => ['youtube.com', 'youtu.be'],
+    'linkedin' => ['linkedin.com', 'lnkd.in'],
+    'x' => ['x.com', 'twitter.com'],
+];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_require();
+    $settingsValid = true;
     foreach ($textKeys as $k) {
         $val = trim((string)($_POST[$k] ?? ''));
         if ($k === 'map_embed' && preg_match('/src="([^"]+)"/', $val, $m)) {
             $val = html_entity_decode($m[1]); // accept the full Google Maps <iframe> code
         }
-        if (in_array($k, ['facebook', 'instagram'], true) && $val !== '' && !preg_match('#^https?://#', $val)) {
-            $val = 'https://' . $val;
+        if (isset($socialHosts[$k]) && $val !== '') {
+            if (!preg_match('#^https?://#i', $val)) {
+                $val = 'https://' . $val;
+            }
+            $parts = parse_url($val);
+            $host = is_array($parts) ? strtolower($parts['host'] ?? '') : '';
+            $hostAllowed = false;
+            foreach ($socialHosts[$k] as $allowedHost) {
+                if ($host === $allowedHost || substr($host, -strlen('.' . $allowedHost)) === '.' . $allowedHost) {
+                    $hostAllowed = true;
+                    break;
+                }
+            }
+            if (
+                !is_array($parts)
+                || !in_array(strtolower($parts['scheme'] ?? ''), ['http', 'https'], true)
+                || isset($parts['user'])
+                || isset($parts['pass'])
+                || isset($parts['port'])
+                || !$hostAllowed
+                || !filter_var($val, FILTER_VALIDATE_URL)
+            ) {
+                flash('error', ucfirst($k) . ' must be a valid link from its official platform.');
+                $settingsValid = false;
+                continue;
+            }
+            $val = preg_replace('#^http://#i', 'https://', $val);
         }
         save_setting($k, $val);
+    }
+    $videoLines = preg_split('/\r\n|\r|\n/', trim((string)($_POST['tiktok_videos'] ?? '')), -1, PREG_SPLIT_NO_EMPTY);
+    $videoLines = array_map('trim', $videoLines);
+    $videoLines = array_values(array_filter($videoLines, static function ($line) {
+        return $line !== '';
+    }));
+    $videosValid = count($videoLines) <= 3;
+    foreach ($videoLines as $videoUrl) {
+        if (tiktok_video_id($videoUrl) === null) {
+            $videosValid = false;
+            break;
+        }
+    }
+    if ($videosValid) {
+        save_setting('tiktok_videos', implode("\n", $videoLines));
+    } else {
+        flash('error', 'Add up to three full TikTok video URLs (tiktok.com/@name/video/123...). Existing previews were not changed.');
+        $settingsValid = false;
     }
     foreach (['hero_image' => ['hero', 2000], 'logo' => ['logo', 600]] as $key => $cfg) {
         if (!empty($_POST['remove_' . $key])) {
@@ -28,13 +80,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             list($file, $err) = save_upload($files[0], $cfg[0], $cfg[1]);
             if ($err) {
                 flash('error', $err);
+                $settingsValid = false;
             } else {
                 delete_upload(setting($key));
                 save_setting($key, $file);
             }
         }
     }
-    flash('success', 'Settings saved.');
+    if ($settingsValid) {
+        flash('success', 'Settings saved.');
+    }
     redirect('admin/settings.php');
 }
 
@@ -81,9 +136,14 @@ include __DIR__ . '/_header.php';
   <div class="panel">
     <h2>Social &amp; map</h2>
     <div class="cols">
-      <label>Facebook URL<input name="facebook" value="<?= $s('facebook') ?>"></label>
-      <label>Instagram URL<input name="instagram" value="<?= $s('instagram') ?>"></label>
+      <label>Facebook URL<input name="facebook" value="<?= $s('facebook') ?>" placeholder="https://facebook.com/your-page"></label>
+      <label>Instagram URL<input name="instagram" value="<?= $s('instagram') ?>" placeholder="https://instagram.com/your-profile"></label>
+      <label>TikTok URL<input name="tiktok" value="<?= $s('tiktok') ?>" placeholder="https://www.tiktok.com/@your-profile"></label>
+      <label>YouTube URL<input name="youtube" value="<?= $s('youtube') ?>" placeholder="https://www.youtube.com/@your-channel"></label>
+      <label>LinkedIn URL<input name="linkedin" value="<?= $s('linkedin') ?>" placeholder="https://www.linkedin.com/company/your-company"></label>
+      <label>X / Twitter URL<input name="x" value="<?= $s('x') ?>" placeholder="https://x.com/your-profile"></label>
     </div>
+    <label>TikTok video URLs <small class="muted">(up to 3 full public video links, one per line; previews appear on the homepage)</small><textarea name="tiktok_videos" rows="4" placeholder="https://www.tiktok.com/@your-profile/video/1234567890123456789"><?= $s('tiktok_videos') ?></textarea></label>
     <label>Google Maps embed <small class="muted">(Google Maps → Share → Embed a map → paste the iframe code)</small><textarea name="map_embed" rows="3"><?= $s('map_embed') ?></textarea></label>
   </div>
   <button class="btn btn-primary" type="submit">Save settings</button>

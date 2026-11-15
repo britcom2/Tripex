@@ -63,6 +63,25 @@ function save_setting(string $key, string $value): void
     q('INSERT INTO settings (skey, svalue) VALUES (?, ?) ON DUPLICATE KEY UPDATE svalue = VALUES(svalue)', [$key, $value]);
 }
 
+function tiktok_video_id(string $url): ?string
+{
+    $parts = parse_url(trim($url));
+    if (!is_array($parts) || strtolower($parts['scheme'] ?? '') !== 'https') {
+        return null;
+    }
+
+    $host = strtolower($parts['host'] ?? '');
+    if ($host !== 'tiktok.com' && substr($host, -strlen('.tiktok.com')) !== '.tiktok.com') {
+        return null;
+    }
+
+    if (preg_match('#^/@[A-Za-z0-9._-]+/video/([0-9]{10,25})/?$#', $parts['path'] ?? '', $matches)) {
+        return $matches[1];
+    }
+
+    return null;
+}
+
 // ---------- Security: CSRF, flash ----------
 function csrf_token(): string
 {
