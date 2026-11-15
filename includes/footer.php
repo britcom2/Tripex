@@ -6,7 +6,7 @@ try {
     $cats = q('SELECT name, slug FROM categories WHERE is_active = 1 ORDER BY sort_order, name LIMIT 8')->fetchAll();
 } catch (Throwable $ex) {
 }
-$wa = preg_replace('/\D/', '', setting('whatsapp'));
+$wa = whatsapp_link(setting('whatsapp'));
 ?>
 <footer class="site-footer">
   <div class="container footer-grid">
@@ -46,14 +46,14 @@ $wa = preg_replace('/\D/', '', setting('whatsapp'));
   <div class="footer-bottom"><div class="container">&copy; <?= date('Y') ?> <?= e($siteName) ?>. All rights reserved.</div></div>
 </footer>
 <?php if ($wa): ?>
-<a class="wa-float" href="<?= e(url('contact.php?via=whatsapp')) ?>" aria-label="Enquire via WhatsApp">WhatsApp</a>
+<a class="wa-float" href="<?= e($wa) ?>" target="_blank" rel="noopener noreferrer" aria-label="Chat with us on WhatsApp">WhatsApp</a>
 <?php endif; ?>
 <nav class="mobile-actionbar" aria-label="Mobile navigation and quick contact">
   <a class="<?= $current === 'index.php' ? 'active' : '' ?>" href="<?= e(url()) ?>"><span class="mobile-nav-icon" aria-hidden="true">&#8962;</span><span class="mobile-nav-label">Home</span></a>
   <a class="<?= in_array($current, ['products.php', 'product.php', 'category.php'], true) ? 'active' : '' ?>" href="<?= e(url('products')) ?>"><span class="mobile-nav-icon" aria-hidden="true">&#9638;</span><span class="mobile-nav-label">Products</span></a>
   <a class="<?= $current === 'gallery.php' ? 'active' : '' ?>" href="<?= e(url('gallery')) ?>"><span class="mobile-nav-icon" aria-hidden="true">&#9635;</span><span class="mobile-nav-label">Projects</span></a>
   <?php if (setting('phone')): ?><a href="tel:<?= e(preg_replace('/[^\d+]/', '', setting('phone'))) ?>"><span class="mobile-nav-icon" aria-hidden="true">&#9742;</span><span class="mobile-nav-label">Call</span></a><?php endif; ?>
-  <?php if ($wa): ?><a href="<?= e(url('contact.php?via=whatsapp')) ?>"><span class="mobile-nav-icon" aria-hidden="true">&#9993;</span><span class="mobile-nav-label">WhatsApp</span></a><?php endif; ?>
+  <?php if ($wa): ?><a href="<?= e($wa) ?>" target="_blank" rel="noopener noreferrer"><span class="mobile-nav-icon" aria-hidden="true">&#9993;</span><span class="mobile-nav-label">WhatsApp</span></a><?php endif; ?>
   <a class="mobile-action-quote <?= $current === 'quote.php' ? 'active' : '' ?>" href="<?= e(url('quote')) ?>"><span class="mobile-nav-icon" aria-hidden="true">&#9998;</span><span class="mobile-nav-label">Quote<?php if (!empty($quoteCount)): ?> (<?= $quoteCount ?>)<?php endif; ?></span></a>
 </nav>
 <script src="<?= e(url('assets/js/enquiry-channel.js')) ?>?v=3" defer></script>

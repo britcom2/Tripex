@@ -423,7 +423,7 @@ h1,h2,h3,h4,.brand-text{font-family:Georgia,'Times New Roman',serif;font-weight:
 .btn-primary{background:#bd9a60;color:#211f19}
 .btn-primary:hover{background:#d1b27b;color:#211f19}
 .btn-outline{border-color:#b8ad99}
-.home-hero{background-color:#282720}
+.home-hero{background-color:#514b3f}
 .home-hero:before{background:url('../img/hero-texture.svg') repeat,radial-gradient(ellipse at 86% 30%,rgba(196,156,98,.17),transparent 35%),linear-gradient(110deg,rgba(28,28,24,.94),rgba(40,39,32,.98))}
 .home-hero h1,.home-story-copy h2,.home-section-heading h2,.about-story-copy h2,.about-team-copy h3,.about-milestone h3{font-family:Georgia,'Times New Roman',serif;font-weight:400}
 .home-hero h1 em{color:#d8bf90}
@@ -431,7 +431,8 @@ h1,h2,h3,h4,.brand-text{font-family:Georgia,'Times New Roman',serif;font-weight:
 .home-eyebrow,.home-hero .home-kicker{color:#dfc58e}
 .home-hero .btn-primary{background:#d2b579}
 .home-range-card,.about-work-card,.home-project-photo{border-radius:8px}
-.home-purpose,.about-standards{background:#282720}
+.home-purpose{background:#49463c}
+.about-standards{background:#282720}
 .home-purpose h2{font-family:Georgia,'Times New Roman',serif;font-weight:400}
 .about-banner{background-image:url('../img/hero-texture.svg'),linear-gradient(115deg,#282720,#464339)}
 .about-purpose-card,.about-value-card,.about-team-card,.home-service-card{border-radius:8px}
@@ -567,13 +568,13 @@ h1,h2,h3,h4,.brand-text{font-family:Georgia,'Times New Roman',serif;font-weight:
 
 /* Full-bleed homepage slider */
 .home-hero{height:clamp(580px,calc(100svh - 110px),780px);min-height:580px;isolation:isolate}
-.home-hero:before{z-index:1;background:url('../img/hero-texture.svg') repeat,linear-gradient(90deg,rgba(17,26,21,.88) 0%,rgba(17,26,21,.66) 48%,rgba(17,26,21,.16) 100%),linear-gradient(0deg,rgba(17,26,21,.25),transparent 40%);pointer-events:none}
+.home-hero:before{z-index:1;background:url('../img/hero-texture.svg') repeat,linear-gradient(90deg,rgba(56,50,40,.68) 0%,rgba(56,50,40,.48) 48%,rgba(56,50,40,.12) 100%),linear-gradient(0deg,rgba(56,50,40,.18),transparent 40%);pointer-events:none}
 .home-hero-slides{position:absolute;inset:0}
 .home-hero-slide{position:absolute;z-index:2;inset:0;display:block;min-height:0;height:100%;padding:0;isolation:isolate}
 .home-hero-slide[hidden]{display:none}
 .home-hero-slide:not([hidden]){animation:heroSlideIn .55s ease both}
-.home-hero-background{position:absolute;z-index:0;inset:0;overflow:hidden;background:#272820}
-.home-hero-background:after{position:absolute;inset:0;background:linear-gradient(90deg,rgba(17,26,21,.82) 0%,rgba(17,26,21,.64) 48%,rgba(17,26,21,.18) 100%),linear-gradient(0deg,rgba(17,26,21,.28),transparent 42%);content:""}
+.home-hero-background{position:absolute;z-index:0;inset:0;overflow:hidden;background:#514b3f}
+.home-hero-background:after{position:absolute;inset:0;background:linear-gradient(90deg,rgba(56,50,40,.56) 0%,rgba(56,50,40,.34) 48%,rgba(56,50,40,.08) 100%),linear-gradient(0deg,rgba(56,50,40,.18),transparent 42%);content:""}
 .home-hero-background img{width:100%;height:100%;object-fit:cover;object-position:center}
 .home-hero-content{position:relative;z-index:2;display:flex;align-items:center;height:100%;padding-top:40px;padding-bottom:76px}
 .home-hero-copy{max-width:680px}
@@ -581,7 +582,7 @@ h1,h2,h3,h4,.brand-text{font-family:Georgia,'Times New Roman',serif;font-weight:
 .home-hero-controls{position:absolute;z-index:3;right:max(20px,calc((100vw - 1180px)/2 + 20px));bottom:28px;display:flex;align-items:center;gap:12px}
 @media(max-width:820px){
   .home-hero{height:clamp(620px,calc(100svh - 50px),780px);min-height:620px}
-  .home-hero-background:after{background:linear-gradient(90deg,rgba(17,26,21,.76),rgba(17,26,21,.42)),linear-gradient(0deg,rgba(17,26,21,.4),transparent 55%)}
+  .home-hero-background:after{background:linear-gradient(90deg,rgba(56,50,40,.56),rgba(56,50,40,.3)),linear-gradient(0deg,rgba(56,50,40,.22),transparent 55%)}
   .home-hero-background img{object-position:center}
   .home-hero-content{padding-top:36px;padding-bottom:68px}
   .home-hero-copy{max-width:620px}

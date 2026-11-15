@@ -126,7 +126,7 @@ include __DIR__ . '/includes/header.php';
       <div class="home-range-grid">
         <?php foreach (array_slice($categories, 0, 4) as $index => $category): ?>
           <a class="home-range-card" href="<?= e(url('category/' . $category['slug'])) ?>">
-            <img loading="lazy" decoding="async" src="<?= e($category['image'] ? img_url($category['image']) : $photoAt($index)) ?>"<?= img_srcset_attr($category['image'] ?: ($photos[$index]['filename'] ?? null), '(max-width: 520px) 48vw, 25vw') ?> alt="<?= e($category['name']) ?>">
+            <img loading="lazy" decoding="async" src="<?= e($category['image'] ? img_url($category['image']) : $photoAt($index)) ?>"<?= img_srcset_attr($category['image'] ?: ($photos[$index]['filename'] ?? null), '(max-width: 1000px) 48vw, 25vw') ?> alt="<?= e($category['name']) ?>">
             <span class="home-range-overlay"><small><?= sprintf('%02d', $index + 1) ?> / COLLECTION</small><strong><?= e($category['name']) ?></strong><span><?= (int)$category['product_count'] ?> product<?= (int)$category['product_count'] === 1 ? '' : 's' ?> <b aria-hidden="true">&rarr;</b></span></span>
           </a>
         <?php endforeach; ?>
@@ -135,7 +135,7 @@ include __DIR__ . '/includes/header.php';
       <div class="home-range-grid">
         <?php foreach ($ranges as $index => $range): ?>
           <a class="home-range-card" href="<?= e(url('products')) ?>">
-            <img loading="lazy" decoding="async" src="<?= e($photoAt($range['photo'])) ?>"<?= img_srcset_attr($photos[$range['photo']]['filename'] ?? null, '(max-width: 520px) 48vw, 25vw') ?> alt="<?= e($range['name'] . ' flooring selection') ?>">
+            <img loading="lazy" decoding="async" src="<?= e($photoAt($range['photo'])) ?>"<?= img_srcset_attr($photos[$range['photo']]['filename'] ?? null, '(max-width: 1000px) 48vw, 25vw') ?> alt="<?= e($range['name'] . ' flooring selection') ?>">
             <span class="home-range-overlay"><small><?= sprintf('%02d', $index + 1) ?> / COLLECTION</small><strong><?= e($range['name']) ?></strong><span><?= e($range['detail']) ?> <b aria-hidden="true">&rarr;</b></span></span>
           </a>
         <?php endforeach; ?>
@@ -201,7 +201,7 @@ include __DIR__ . '/includes/header.php';
       <?php for ($i = 0; $i < 5; $i++): ?>
         <?php $projectPhotoIndex = $projectPhotoOffset + $i; ?>
         <a class="home-project-photo home-project-photo-<?= $i + 1 ?>" href="<?= e(url('gallery')) ?>">
-          <img loading="lazy" decoding="async" src="<?= e($photoAt($projectPhotoIndex)) ?>"<?= img_srcset_attr($photos[$projectPhotoIndex]['filename'] ?? null, '(max-width: 520px) 90vw, 35vw') ?> alt="<?= e($photoTitle($projectPhotoIndex, 'Tripex architectural flooring project')) ?>">
+          <img loading="lazy" decoding="async" src="<?= e($photoAt($projectPhotoIndex)) ?>"<?= img_srcset_attr($photos[$projectPhotoIndex]['filename'] ?? null, $i === 4 ? '(max-width: 520px) 90vw, 35vw' : '(max-width: 520px) 48vw, 35vw') ?> alt="<?= e($photoTitle($projectPhotoIndex, 'Tripex architectural flooring project')) ?>">
           <?php if (!empty($photos[$projectPhotoIndex]['title'])): ?><span><?= e($photos[$projectPhotoIndex]['title']) ?></span><?php endif; ?>
         </a>
       <?php endfor; ?>
