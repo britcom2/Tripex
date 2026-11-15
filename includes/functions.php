@@ -279,7 +279,7 @@ function excerpt(string $s, int $len = 140): string
 // ---------- Images ----------
 function img_url(?string $file): string
 {
-    if (!$file) {
+    if (!$file || !preg_match('/^[A-Za-z0-9_.-]+$/', $file) || !is_file(ROOT . '/uploads/' . $file)) {
         return url('assets/img/placeholder.svg');
     }
     return url('uploads/' . $file);

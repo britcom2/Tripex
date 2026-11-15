@@ -56,6 +56,8 @@ If the installer cannot write `config.php`, copy `config.sample.php` to `config.
 
 The workflow at `.github/workflows/deploy-truehost.yml` validates PHP syntax and deploys each push to `main` to the production site over FTPS. It preserves the live `config.php` and uploaded content. A `deployment.json` release marker records the deployed commit; check **Admin → System status → Deployed revision** to confirm which commit is live. If the marker does not change, confirm the GitHub Actions run completed successfully.
 
+Uploaded images are intentionally excluded from code deployments. Back up and restore the live `uploads/` directory separately; if a database record points to a missing image, the site displays the standard placeholder until that image is re-uploaded.
+
 Configure these repository secrets under **Settings → Secrets and variables → Actions**. Keep the `TRUEHOST_*` values pointed at the production site:
 
 | Secret | Purpose |
