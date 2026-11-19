@@ -129,7 +129,7 @@ include __DIR__ . '/_header.php';
   </div>
   <div class="panel">
     <h2>Page content</h2>
-    <label>About us text <small class="muted">Use separate lines and these section headings to organize the About page: Our Heritage, Our Mission, Our Vision, Our Core Values, Our Corporate Journey, Executive Leadership, International Standards Accreditations. List values as title/description pairs, timeline entries as year/title/description, and team members as role/name/description.</small><textarea name="about_text" rows="14"><?= $s('about_text') ?></textarea></label>
+    <label>About us text <small class="muted">Use separate lines and these section headings to organize the About page: Our Heritage, Our Mission, Our Vision, Our Core Values, Our Corporate Journey and International Standards Accreditations. List values as title/description pairs and timeline entries as year/title/description. Executive leadership content is retained for existing records but is not displayed.</small><textarea name="about_text" rows="14"><?= $s('about_text') ?></textarea></label>
     <label>Footer blurb<textarea name="footer_text" rows="2"><?= $s('footer_text') ?></textarea></label>
     <label>SEO description <small class="muted">(shown in Google results)</small><textarea name="meta_description" rows="2"><?= $s('meta_description') ?></textarea></label>
   </div>

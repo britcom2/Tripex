@@ -3,7 +3,7 @@ require __DIR__ . '/includes/bootstrap.php';
 // this is a comment
 
 $pageTitle = 'About Us';
-$metaDesc = 'Learn about Tripex, our architectural flooring expertise, company journey, team and standards.';
+$metaDesc = 'Learn about Tripex, our architectural flooring expertise, company journey and standards.';
 
 $source = trim(setting('about_text', "Tripex Carpets supplies premium flooring solutions including carpet tiles, wall-to-wall carpets, vinyl planks and architectural surfaces.\n\nWe help homeowners, designers, contractors and businesses choose durable, good-looking flooring that suits their space and budget."));
 $sectionNames = [
@@ -183,22 +183,6 @@ include __DIR__ . '/includes/header.php';
         <article class="about-milestone">
           <span class="about-year"><?= e($milestone['year']) ?></span>
           <div><h3><?= e($milestone['title']) ?></h3><p><?= e($milestone['text']) ?></p></div>
-        </article>
-      <?php endforeach; ?>
-    </div>
-  </div>
-</section>
-<?php endif; ?>
-
-<?php if ($team): ?>
-<section class="section about-team">
-  <div class="container">
-    <div class="section-head"><span class="about-kicker">Executive leadership</span><h2>People behind the precision.</h2><?php if ($leadershipIntro): ?><p><?= e($leadershipIntro) ?></p><?php endif; ?></div>
-    <div class="about-team-grid">
-      <?php foreach ($team as $member): ?>
-        <article class="about-team-card">
-          <div class="about-team-photo"><img loading="lazy" src="<?= e(url('assets/img/about-team.svg')) ?>" alt="Portrait placeholder for <?= e($member['name']) ?>"><span>Portrait placeholder</span></div>
-          <div class="about-team-copy"><span><?= e($member['role']) ?></span><h3><?= e($member['name']) ?></h3><p><?= e($member['text']) ?></p></div>
         </article>
       <?php endforeach; ?>
     </div>
