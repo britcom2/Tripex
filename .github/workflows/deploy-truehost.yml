@@ -28,7 +28,7 @@ jobs:
 
       - name: Validate PHP syntax
         run: find . -type f -name '*.php' -not -path './uploads/*' -print0 | xargs -0 -n1 php -l
-8rghnm,
+
       - name: Record deployed revision
         run: printf '{"commit":"%s","deployed_at":"%s"}\n' "$GITHUB_SHA" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > deployment.json
 
