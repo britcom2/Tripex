@@ -27,18 +27,14 @@ $quoteCount = is_array($quoteBasket) ? count($quoteBasket) : 0;
 <meta property="og:title" content="<?= e($fullTitle) ?>">
 <meta property="og:description" content="<?= e($desc) ?>">
 <?php if (!empty($ogImage)): ?><meta property="og:image" content="<?= e($ogImage) ?>"><?php endif; ?>
-<link rel="stylesheet" href="<?= e(url('assets/css/style.css')) ?>?v=21">
+<link rel="stylesheet" href="<?= e(url('assets/css/style.css')) ?>?v=22">
 </head>
 <body>
 <div class="topbar">
   <div class="container">
     <div>
-      <?php foreach (['phone', 'phone2', 'phone3'] as $phoneKey): ?>
-        <?php if (setting($phoneKey)): ?><a href="tel:<?= e(preg_replace('/[^\d+]/', '', setting($phoneKey))) ?>">&#9742; <?= e(setting($phoneKey)) ?></a><?php endif; ?>
-      <?php endforeach; ?>
-      <?php foreach (['email', 'email2'] as $emailKey): ?>
-        <?php if (setting($emailKey)): ?><a href="mailto:<?= e(setting($emailKey)) ?>">&#9993; <?= e(setting($emailKey)) ?></a><?php endif; ?>
-      <?php endforeach; ?>
+      <?php if (setting('phone')): ?><a href="tel:<?= e(preg_replace('/[^\d+]/', '', setting('phone'))) ?>">&#9742; <?= e(setting('phone')) ?></a><?php endif; ?>
+      <?php if (setting('email')): ?><a href="mailto:<?= e(setting('email')) ?>">&#9993; <?= e(setting('email')) ?></a><?php endif; ?>
     </div>
     <div class="hide-sm"><?= e(setting('hours')) ?></div>
   </div>

@@ -98,20 +98,8 @@ $map = setting('map_embed');
     <aside class="contact-info">
       <h3>Get in touch</h3>
       <?php if (setting('address')): ?><p><strong>Visit us</strong><br><?= nl2br(e(setting('address'))) ?></p><?php endif; ?>
-      <?php if (setting('phone') || setting('phone2') || setting('phone3')): ?>
-        <p><strong>Call</strong><br>
-          <?php foreach (['phone', 'phone2', 'phone3'] as $phoneKey): ?>
-            <?php if (setting($phoneKey)): ?><a href="tel:<?= e(preg_replace('/[^\d+]/', '', setting($phoneKey))) ?>"><?= e(setting($phoneKey)) ?></a><br><?php endif; ?>
-          <?php endforeach; ?>
-        </p>
-      <?php endif; ?>
-      <?php if (setting('email') || setting('email2')): ?>
-        <p><strong>Email</strong><br>
-          <?php foreach (['email', 'email2'] as $emailKey): ?>
-            <?php if (setting($emailKey)): ?><a href="mailto:<?= e(setting($emailKey)) ?>"><?= e(setting($emailKey)) ?></a><br><?php endif; ?>
-          <?php endforeach; ?>
-        </p>
-      <?php endif; ?>
+      <?php if (setting('phone')): ?><p><strong>Call</strong><br><a href="tel:<?= e(preg_replace('/[^\d+]/', '', setting('phone'))) ?>"><?= e(setting('phone')) ?></a></p><?php endif; ?>
+      <?php if (setting('email')): ?><p><strong>Email</strong><br><a href="mailto:<?= e(setting('email')) ?>"><?= e(setting('email')) ?></a></p><?php endif; ?>
       <?php if (setting('hours')): ?><p><strong>Opening hours</strong><br><?= e(setting('hours')) ?></p><?php endif; ?>
     </aside>
   </div>

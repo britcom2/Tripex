@@ -52,7 +52,6 @@ function setting(string $key, string $default = ''): string
         'phone3' => '0757999990',
         'whatsapp' => '254723390804',
         'email' => 'info@tripexcarpets.com',
-        'email2' => 'tripexlimited@gmail.com',
     ];
     if ($all === null) {
         $all = [];

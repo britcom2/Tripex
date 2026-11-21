@@ -2,7 +2,7 @@
 require __DIR__ . '/../includes/bootstrap.php';
 require_admin();
 
-$textKeys = ['site_name', 'tagline', 'phone', 'phone2', 'phone3', 'email', 'email2', 'whatsapp', 'address', 'hours', 'currency',
+$textKeys = ['site_name', 'tagline', 'phone', 'phone2', 'phone3', 'email', 'whatsapp', 'address', 'hours', 'currency',
              'hero_title', 'hero_subtitle', 'about_text', 'footer_text', 'meta_description',
              'facebook', 'instagram', 'tiktok', 'youtube', 'linkedin', 'x', 'map_embed'];
 $socialHosts = [
@@ -107,8 +107,7 @@ include __DIR__ . '/_header.php';
       <label>Phone 1<input name="phone" value="<?= $s('phone') ?>"></label>
       <label>Phone 2<input name="phone2" value="<?= $s('phone2') ?>"></label>
       <label>Phone 3<input name="phone3" value="<?= $s('phone3') ?>"></label>
-      <label>Primary email (enquiries are sent here)<input type="email" name="email" value="<?= $s('email') ?>"></label>
-      <label>Secondary email<input type="email" name="email2" value="<?= $s('email2') ?>"></label>
+      <label>Email (enquiries are sent here)<input type="email" name="email" value="<?= $s('email') ?>"></label>
       <label>WhatsApp number <small class="muted">(with country code, e.g. 2547XXXXXXXX)</small><input name="whatsapp" value="<?= $s('whatsapp') ?>"></label>
       <label>Currency label<input name="currency" value="<?= $s('currency', 'KES') ?>"></label>
     </div>

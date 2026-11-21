@@ -105,7 +105,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'hours' => 'Mon - Sat: 8:00 AM - 5:30 PM',
                 'currency' => 'KES',
                 'phone' => '0208160280', 'phone2' => '0723390804', 'phone3' => '0757999990',
-                'email' => 'info@tripexcarpets.com', 'email2' => 'tripexlimited@gmail.com',
+                'email' => 'info@tripexcarpets.com',
                 'whatsapp' => '254723390804',
                 'address' => "Krishna Mansio, 1st Floor, Room 9,\nMoktar Daddah Street,\nP.O. Box 10538-00100, Nairobi, Kenya",
                 'meta_description' => 'Premium flooring, carpet tiles, vinyl planks and architectural surfaces in Kenya.',
