@@ -45,6 +45,15 @@ function q(string $sql, array $params = []): PDOStatement
 function setting(string $key, string $default = ''): string
 {
     static $all = null;
+    $defaults = [
+        'address' => "Krishna Mansio, 1st Floor, Room 9,\nMoktar Daddah Street,\nP.O. Box 10538-00100, Nairobi, Kenya",
+        'phone' => '0208160280',
+        'phone2' => '0723390804',
+        'phone3' => '0757999990',
+        'whatsapp' => '254723390804',
+        'email' => 'info@tripexcarpets.com',
+        'email2' => 'tripexlimited@gmail.com',
+    ];
     if ($all === null) {
         $all = [];
         try {
@@ -55,7 +64,10 @@ function setting(string $key, string $default = ''): string
             $all = [];
         }
     }
-    return (isset($all[$key]) && $all[$key] !== '') ? $all[$key] : $default;
+    if (isset($all[$key]) && $all[$key] !== '') {
+        return $all[$key];
+    }
+    return $default !== '' ? $default : ($defaults[$key] ?? '');
 }
 
 function save_setting(string $key, string $value): void

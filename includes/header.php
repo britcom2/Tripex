@@ -33,8 +33,12 @@ $quoteCount = is_array($quoteBasket) ? count($quoteBasket) : 0;
 <div class="topbar">
   <div class="container">
     <div>
-      <?php if (setting('phone')): ?><a href="tel:<?= e(preg_replace('/[^\d+]/', '', setting('phone'))) ?>">&#9742; <?= e(setting('phone')) ?></a><?php endif; ?>
-      <?php if (setting('email')): ?><a href="mailto:<?= e(setting('email')) ?>">&#9993; <?= e(setting('email')) ?></a><?php endif; ?>
+      <?php foreach (['phone', 'phone2', 'phone3'] as $phoneKey): ?>
+        <?php if (setting($phoneKey)): ?><a href="tel:<?= e(preg_replace('/[^\d+]/', '', setting($phoneKey))) ?>">&#9742; <?= e(setting($phoneKey)) ?></a><?php endif; ?>
+      <?php endforeach; ?>
+      <?php foreach (['email', 'email2'] as $emailKey): ?>
+        <?php if (setting($emailKey)): ?><a href="mailto:<?= e(setting($emailKey)) ?>">&#9993; <?= e(setting($emailKey)) ?></a><?php endif; ?>
+      <?php endforeach; ?>
     </div>
     <div class="hide-sm"><?= e(setting('hours')) ?></div>
   </div>

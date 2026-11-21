@@ -46,8 +46,12 @@ $socialLinks = [
       <h4>Contact</h4>
       <ul class="contact-list">
         <?php if (setting('address')): ?><li><?= nl2br(e(setting('address'))) ?></li><?php endif; ?>
-        <?php if (setting('phone')): ?><li><a href="tel:<?= e(preg_replace('/[^\d+]/', '', setting('phone'))) ?>"><?= e(setting('phone')) ?></a></li><?php endif; ?>
-        <?php if (setting('email')): ?><li><a href="mailto:<?= e(setting('email')) ?>"><?= e(setting('email')) ?></a></li><?php endif; ?>
+        <?php foreach (['phone', 'phone2', 'phone3'] as $phoneKey): ?>
+          <?php if (setting($phoneKey)): ?><li><a href="tel:<?= e(preg_replace('/[^\d+]/', '', setting($phoneKey))) ?>"><?= e(setting($phoneKey)) ?></a></li><?php endif; ?>
+        <?php endforeach; ?>
+        <?php foreach (['email', 'email2'] as $emailKey): ?>
+          <?php if (setting($emailKey)): ?><li><a href="mailto:<?= e(setting($emailKey)) ?>"><?= e(setting($emailKey)) ?></a></li><?php endif; ?>
+        <?php endforeach; ?>
         <?php if (setting('hours')): ?><li><?= e(setting('hours')) ?></li><?php endif; ?>
       </ul>
     </div>
