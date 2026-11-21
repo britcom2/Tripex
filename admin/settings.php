@@ -4,6 +4,7 @@ require_admin();
 
 $textKeys = ['site_name', 'tagline', 'phone', 'phone2', 'phone3', 'email', 'whatsapp', 'address', 'hours', 'currency',
              'hero_title', 'hero_subtitle', 'about_text', 'footer_text', 'meta_description',
+             'seo_title', 'seo_keywords', 'canonical_url', 'og_image', 'google_rating', 'google_review_count',
              'facebook', 'instagram', 'tiktok', 'youtube', 'linkedin', 'x', 'map_embed'];
 $socialHosts = [
     'facebook' => ['facebook.com', 'fb.com'],
@@ -17,6 +18,20 @@ $socialHosts = [
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_require();
     $settingsValid = true;
+    $googleRating = trim((string)($_POST['google_rating'] ?? ''));
+    $googleReviewCount = trim((string)($_POST['google_review_count'] ?? ''));
+    if ($googleRating !== '' && (!is_numeric($googleRating) || (float)$googleRating < 1 || (float)$googleRating > 5)) {
+        flash('error', 'Google rating must be a number between 1 and 5.');
+        $settingsValid = false;
+    }
+    if ($googleReviewCount !== '' && (!ctype_digit($googleReviewCount) || (int)$googleReviewCount < 1)) {
+        flash('error', 'Google review count must be a positive whole number.');
+        $settingsValid = false;
+    }
+    if (($googleRating === '') !== ($googleReviewCount === '')) {
+        flash('error', 'Enter both a verified Google rating and review count, or leave both blank.');
+        $settingsValid = false;
+    }
     foreach ($textKeys as $k) {
         $val = trim((string)($_POST[$k] ?? ''));
         if ($k === 'map_embed' && preg_match('/src="([^"]+)"/', $val, $m)) {
@@ -133,7 +148,20 @@ include __DIR__ . '/_header.php';
     <h2>Page content</h2>
     <label>About us text <small class="muted">Use separate lines and these section headings to organize the About page: Our Heritage, Our Mission, Our Vision, Our Core Values, Our Corporate Journey and International Standards Accreditations. List values as title/description pairs and timeline entries as year/title/description. Executive leadership content is retained for existing records but is not displayed.</small><textarea name="about_text" rows="14"><?= $s('about_text') ?></textarea></label>
     <label>Footer blurb<textarea name="footer_text" rows="2"><?= $s('footer_text') ?></textarea></label>
-    <label>SEO description <small class="muted">(shown in Google results)</small><textarea name="meta_description" rows="2"><?= $s('meta_description') ?></textarea></label>
+  </div>
+  <div class="panel">
+    <h2>SEO &amp; Google Search</h2>
+    <div class="cols">
+      <label>SEO title <small class="muted">(recommended: 50-60 characters)</small><input name="seo_title" maxlength="70" value="<?= $s('seo_title') ?>" placeholder="Tripex Carpets | Flooring &amp; Carpet Suppliers in Nairobi"></label>
+      <label>Canonical website URL <small class="muted">(for example: https://www.tripexcarpets.com)</small><input name="canonical_url" type="url" value="<?= $s('canonical_url') ?>" placeholder="https://www.tripexcarpets.com"></label>
+    </div>
+    <label>SEO description <small class="muted">(shown in Google results; recommended: 150-160 characters)</small><textarea name="meta_description" maxlength="160" rows="2"><?= $s('meta_description', 'Premium carpets, carpet tiles, vinyl planks and architectural flooring surfaces supplied and installed in Kenya.') ?></textarea></label>
+    <label>SEO keywords <small class="muted">(comma-separated; useful for internal reference and legacy search systems)</small><input name="seo_keywords" value="<?= $s('seo_keywords') ?>" placeholder="carpets Nairobi, carpet tiles Kenya, vinyl flooring, flooring installation"></label>
+    <label>Social sharing image URL <small class="muted">(recommended: 1200 x 630 px; leave blank to use the site logo)</small><input name="og_image" value="<?= $s('og_image') ?>" placeholder="https://www.tripexcarpets.com/uploads/social-share.jpg"></label>
+    <div class="cols">
+      <label>Verified Google rating <small class="muted">(from 1 to 5; enter only genuine Google review data)</small><input name="google_rating" type="number" min="1" max="5" step="0.1" value="<?= $s('google_rating') ?>" placeholder="4.8"></label>
+      <label>Google review count <small class="muted">(total verified Google reviews)</small><input name="google_review_count" type="number" min="1" step="1" value="<?= $s('google_review_count') ?>" placeholder="50"></label>
+    </div>
   </div>
   <div class="panel">
     <h2>Social &amp; map</h2>

@@ -2,8 +2,59 @@
 $current = basename($_SERVER['SCRIPT_NAME']);
 $siteName = setting('site_name', 'Tripex Carpets');
 $tagline = setting('tagline', 'Premium Flooring & Carpet Solutions');
-$fullTitle = isset($pageTitle) && $pageTitle ? $pageTitle . ' | ' . $siteName : $siteName . ' - ' . $tagline;
+$fullTitle = isset($pageTitle) && $pageTitle ? $pageTitle . ' | ' . $siteName : (setting('seo_title') ?: $siteName . ' - ' . $tagline);
 $desc = isset($metaDesc) && $metaDesc ? $metaDesc : setting('meta_description', 'Premium carpets, carpet tiles, vinyl planks and architectural flooring surfaces in Kenya.');
+$canonicalBase = rtrim(setting('canonical_url'), '/');
+$scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+$requestHost = $_SERVER['HTTP_HOST'] ?? 'localhost';
+$routeSuffix = [
+  'index.php' => '',
+  'products.php' => '/products',
+  'services.php' => '/services',
+  'gallery.php' => '/gallery',
+  'about.php' => '/about',
+  'contact.php' => '/contact',
+  'quote.php' => '/quote',
+  'account.php' => '/account',
+];
+$canonical = $canonicalBase !== ''
+  ? $canonicalBase . ($routeSuffix[$current] ?? strtok($_SERVER['REQUEST_URI'] ?? '/', '?'))
+  : $scheme . '://' . $requestHost . strtok($_SERVER['REQUEST_URI'] ?? '/', '?');
+$ogImageUrl = !empty($ogImage) ? $ogImage : setting('og_image');
+if ($ogImageUrl === '' && $logo) {
+  $ogImageUrl = $scheme . '://' . $requestHost . img_url(setting('logo'));
+}
+$socialSameAs = array_values(array_filter([
+  setting('facebook'), setting('instagram'), setting('tiktok'), setting('youtube'), setting('linkedin'), setting('x')
+]));
+$googleRating = trim(setting('google_rating'));
+$googleReviewCount = trim(setting('google_review_count'));
+$business = [
+  '@context' => 'https://schema.org',
+  '@type' => 'HomeAndConstructionBusiness',
+  '@id' => $canonical . '#business',
+  'name' => $siteName,
+  'description' => $desc,
+  'url' => $canonical,
+  'telephone' => array_values(array_filter([setting('phone'), setting('phone2'), setting('phone3')])),
+  'email' => setting('email'),
+  'address' => [
+    '@type' => 'PostalAddress',
+    'streetAddress' => setting('address'),
+    'addressLocality' => 'Nairobi',
+    'postalCode' => '10538-00100',
+    'addressCountry' => 'KE',
+  ],
+];
+if ($ogImageUrl !== '') $business['image'] = $ogImageUrl;
+if ($socialSameAs) $business['sameAs'] = $socialSameAs;
+if ($googleRating !== '' && $googleReviewCount !== '') {
+  $business['aggregateRating'] = [
+    '@type' => 'AggregateRating',
+    'ratingValue' => $googleRating,
+    'reviewCount' => $googleReviewCount,
+  ];
+}
 $nav = [
     'index.php'    => ['Home', 'index.php'],
     'products.php' => ['Products', 'products'],
@@ -23,10 +74,21 @@ $quoteCount = is_array($quoteBasket) ? count($quoteBasket) : 0;
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?= e($fullTitle) ?></title>
 <meta name="description" content="<?= e($desc) ?>">
+<?php if (setting('seo_keywords')): ?><meta name="keywords" content="<?= e(setting('seo_keywords')) ?>"><?php endif; ?>
+<meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">
 <meta name="theme-color" content="#f5f1e8">
+<link rel="canonical" href="<?= e($canonical) ?>">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="<?= e($siteName) ?>">
+<meta property="og:url" content="<?= e($canonical) ?>">
 <meta property="og:title" content="<?= e($fullTitle) ?>">
 <meta property="og:description" content="<?= e($desc) ?>">
-<?php if (!empty($ogImage)): ?><meta property="og:image" content="<?= e($ogImage) ?>"><?php endif; ?>
+<?php if ($ogImageUrl !== ''): ?><meta property="og:image" content="<?= e($ogImageUrl) ?>"><?php endif; ?>
+<meta name="twitter:card" content="<?= $ogImageUrl !== '' ? 'summary_large_image' : 'summary' ?>">
+<meta name="twitter:title" content="<?= e($fullTitle) ?>">
+<meta name="twitter:description" content="<?= e($desc) ?>">
+<?php if ($ogImageUrl !== ''): ?><meta name="twitter:image" content="<?= e($ogImageUrl) ?>"><?php endif; ?>
+<script type="application/ld+json"><?= json_encode($business, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?></script>
 <link rel="stylesheet" href="<?= e(url('assets/css/style.css')) ?>?v=22">
 </head>
 <body>

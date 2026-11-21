@@ -109,6 +109,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'whatsapp' => '254723390804',
                 'address' => "Krishna Mansio, 1st Floor, Room 9,\nMoktar Daddah Street,\nP.O. Box 10538-00100, Nairobi, Kenya",
                 'meta_description' => 'Premium flooring, carpet tiles, vinyl planks and architectural surfaces in Kenya.',
+                'seo_title' => 'Tripex Carpets | Flooring & Carpet Suppliers in Nairobi',
+                'seo_keywords' => 'carpets Nairobi, carpet tiles Kenya, vinyl flooring, flooring installation',
             ];
             $st = $pdo->prepare('INSERT INTO settings (skey, svalue) VALUES (?, ?) ON DUPLICATE KEY UPDATE svalue = VALUES(svalue)');
             foreach ($defaults as $k => $v) {

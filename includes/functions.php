@@ -52,6 +52,8 @@ function setting(string $key, string $default = ''): string
         'phone3' => '0757999990',
         'whatsapp' => '254723390804',
         'email' => 'info@tripexcarpets.com',
+        'seo_title' => 'Tripex Carpets | Flooring & Carpet Suppliers in Nairobi',
+        'seo_keywords' => 'carpets Nairobi, carpet tiles Kenya, vinyl flooring, flooring installation',
     ];
     if ($all === null) {
         $all = [];
